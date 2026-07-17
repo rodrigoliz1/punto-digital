@@ -101,3 +101,4 @@ Los paneles incluidos son una primera superficie visual. Antes de manejar datos 
 ## Producción
 
 El sitio está preparado para Sites y Cloudflare Workers. El dominio canónico objetivo es `https://punto-digital.mx`. Antes de enlazarlo completa Stripe, correo, analítica, documentos legales, políticas de acceso y pruebas de navegación en dispositivos reales.
+# punto-digital
