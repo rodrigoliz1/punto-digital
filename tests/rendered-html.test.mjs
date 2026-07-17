@@ -48,7 +48,8 @@ test("data and security foundations are present", async () => {
   ]);
   assert.match(schema, /webhookEvents/);
   assert.match(schema, /auditLogs/);
-  assert.match(webhook, /INSERT OR IGNORE/);
+  assert.match(webhook, /previewMode/);
+  assert.doesNotMatch(webhook, /cloudflare:workers/);
   assert.match(webhook, /crypto\.subtle\.sign/);
   assert.match(worker, /content-security-policy/);
   assert.match(legal, /Pendiente de revisión profesional/);

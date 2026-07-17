@@ -137,7 +137,12 @@ export function QuoteConfigurator() {
     try {
       const response = await fetch("/api/leads", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...draft, selectedProduct, estimatedTotal: quote.total }) });
       if (!response.ok) throw new Error("No pudimos guardar tu solicitud.");
-      setSaved(true);
+      const data = await response.json() as { saved?: boolean; previewMode?: boolean };
+      if (data.previewMode) {
+        setError("Vista preliminar: la propuesta se generó correctamente, pero aún no se envía ni se guarda en una base de datos.");
+        return;
+      }
+      setSaved(Boolean(data.saved));
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "No pudimos guardar tu solicitud.");
     } finally { setSaving(false); }

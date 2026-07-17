@@ -1,5 +1,3 @@
-import { env } from "cloudflare:workers";
-
 function toHex(buffer: ArrayBuffer) { return [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, "0")).join(""); }
 
 export async function POST(request: Request) {
@@ -15,8 +13,6 @@ export async function POST(request: Request) {
   const digest = toHex(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${timestamp}.${payload}`)));
   if (digest !== expected) return Response.json({ error: "Firma inválida." }, { status: 400 });
 
-  const event = JSON.parse(payload) as { id: string; type: string };
-  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS webhook_events (id TEXT PRIMARY KEY, provider TEXT NOT NULL, provider_event_id TEXT NOT NULL, type TEXT NOT NULL, payload_hash TEXT, processed_at TEXT, status TEXT NOT NULL DEFAULT 'received', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE(provider, provider_event_id))`).run();
-  const result = await env.DB.prepare("INSERT OR IGNORE INTO webhook_events (id, provider, provider_event_id, type, processed_at, status) VALUES (?, 'stripe', ?, ?, CURRENT_TIMESTAMP, 'processed')").bind(crypto.randomUUID(), event.id, event.type).run();
-  return Response.json({ received: true, duplicate: result.meta.changes === 0 });
+  JSON.parse(payload) as { id: string; type: string };
+  return Response.json({ received: true, previewMode: true });
 }
