@@ -6,6 +6,8 @@ import "./globals.css";
 import "./site.css";
 import "./product.css";
 import "./responsive.css";
+import "./preview.css";
+import "./comparison.css";
 
 const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"], display: "swap" });
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });

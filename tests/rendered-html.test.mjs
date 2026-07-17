@@ -21,14 +21,16 @@ test("homepage contains the complete commercial journey", async () => {
 });
 
 test("configurator keeps pricing server-verifiable and previews deterministic", async () => {
-  const [configurator, products, checkout, preview] = await Promise.all([
+  const [configurator, livePreview, products, checkout, preview] = await Promise.all([
     read("components/quote-configurator.tsx"),
+    read("components/preview/live-preview.tsx"),
     read("config/products.ts"),
     read("app/api/checkout/route.ts"),
     read("lib/preview-engine.ts"),
   ]);
   assert.match(configurator, /pd-quote-draft/);
-  assert.match(configurator, /Vista preliminar/);
+  assert.match(configurator, /<LivePreview/);
+  assert.match(livePreview, /Vista preliminar/);
   assert.match(products, /price: 9900/);
   assert.match(products, /price: 18900/);
   assert.match(products, /price: 39900/);
