@@ -29,7 +29,7 @@
 
 @media (max-width: 740px) {
   :root { --container: calc(100% - 36px); --radius-md: 19px; }
-  .header-inner { height: 70px; }.header-actions .button { display: none; }.wordmark { font-size: 16px; }.brand-mark { width: 29px; height: 29px; }.brand-mark i:first-child { left: 7px; top: 7px; }
+  .header-inner { height: 70px; }.header-actions .button { display: none; }.menu-button { display: grid !important; }.wordmark { font-size: 16px; }.brand-mark { width: 29px; height: 29px; }.brand-mark i:first-child { left: 7px; top: 7px; }
   .mobile-menu { padding: 90px 22px 40px; z-index: 9998; }.mobile-menu nav { flex: 1; }.mobile-menu nav a { font-size: 28px; padding: 14px 0; }
   .button { min-height: 49px; padding-inline: 19px; }
   .hero { min-height: auto; height: auto; max-height: none; display: block; padding: 110px 18px 50px; }.hero h1 { font-size: clamp(36px, 10vw, 52px); }.hero-content > p { font-size: 15px; }.hero-actions { align-items: flex-start; flex-direction: column; gap: 18px; margin-top: 26px; }.hero-proof { margin-top: 28px; }.hero-visual { margin-top: 16px; }.orbit-stage { width: 100%; max-width: 420px; margin: 0 auto; }.orbit-node span { display: none; }.orbit-node { width: 36px; padding: 0; justify-content: center; }.orbit-caption { bottom: -2%; }

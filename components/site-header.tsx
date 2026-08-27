@@ -48,8 +48,8 @@ export function SiteHeader() {
         <div className="header-actions">
           <Link href="/contacto" className="icon-button" aria-label="Contactar a Punto Digital"><MessageCircle size={18} /></Link>
           <Link href="/cotizador" className="button button--small">Cotizar mi página <ArrowUpRight size={16} /></Link>
-          <button className="menu-button" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? "Cerrar menú" : "Abrir menú"}>
-            {open ? <X /> : <Menu />}
+          <button className="menu-button" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? "Cerrar menú" : "Abrir menú"} style={open ? { color: "white", borderColor: "rgba(255,255,255,.4)", background: "rgba(255,255,255,.12)" } : undefined}>
+            {open ? <X size={24} strokeWidth={2} /> : <Menu size={24} strokeWidth={1.5} />}
           </button>
         </div>
       </div>
