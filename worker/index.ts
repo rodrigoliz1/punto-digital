@@ -1,6 +1,7 @@
 /** Cloudflare Worker entry point for the vinext-starter template. */
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
+import type { D1Binding } from "../lib/runtime-bindings";
 
 interface Env {
   ASSETS: Fetcher;
@@ -29,6 +30,7 @@ interface ExecutionContext {
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+    globalThis.__PUNTO_DIGITAL_DB__ = env.DB as unknown as D1Binding;
 
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];
@@ -47,7 +49,9 @@ const worker = {
     headers.set("referrer-policy", "strict-origin-when-cross-origin");
     headers.set("permissions-policy", "camera=(), microphone=(), geolocation=()");
     headers.set("x-frame-options", "SAMEORIGIN");
-    headers.set("content-security-policy", "default-src 'self'; img-src 'self' data: blob:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://api.stripe.com; frame-src https://checkout.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self' https://checkout.stripe.com; frame-ancestors 'self'; upgrade-insecure-requests");
+    if (url.protocol === "https:") headers.set("strict-transport-security", "max-age=31536000; includeSubDomains");
+    if (url.pathname.startsWith("/api/") || ["/admin", "/cliente", "/onboarding"].some((path) => url.pathname.startsWith(path))) headers.set("cache-control", "private, no-store");
+    headers.set("content-security-policy", "default-src 'self'; img-src 'self' data: blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://api.stripe.com; frame-src https://checkout.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self' https://checkout.stripe.com; frame-ancestors 'self'; manifest-src 'self'; upgrade-insecure-requests");
     return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
   },
 };

@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, CreditCard, Loader2, RotateCcw, Send } from "lucide-react";
+import { ArrowLeft, ArrowRight, Banknote, Building2, Check, CheckCircle2, Clock3, Copy, CreditCard, Landmark, Loader2, RotateCcw, Send } from "lucide-react";
 import { ADDONS, PRODUCTS, calculateQuote, formatMoney } from "@/config/products";
 import { INDUSTRIES, PROJECT_TYPES } from "@/config/preview";
 import { LivePreview, DEFAULT_PREVIEW_PREFERENCES } from "@/components/preview/live-preview";
 import { migrateQuoteDraft } from "@/lib/preview-engine";
+import { SITE } from "@/config/site";
 import { trackPreviewEvent } from "@/lib/analytics";
 import type { Industry, PreviewPreferences, ProductSlug, ProjectType, QuoteDraft } from "@/types";
 
@@ -56,6 +57,10 @@ export function QuoteConfigurator() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [checkoutLoading, setCheckoutLoading] = useState<"deposit" | "full" | "">("");
+  const [transferLoading, setTransferLoading] = useState(false);
+  const checkoutRequestId = useRef("");
+  const [showPaymentOptions, setShowPaymentOptions] = useState(false);
+  const [pendingPaymentMode, setPendingPaymentMode] = useState<"deposit" | "full">("deposit");
 
   useEffect(() => {
     const restore = window.setTimeout(() => {
@@ -135,7 +140,7 @@ export function QuoteConfigurator() {
     setSaving(true);
     setError("");
     try {
-      const response = await fetch("/api/leads", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...draft, selectedProduct, estimatedTotal: quote.total }) });
+      const response = await fetch("/api/leads", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: draft.email, contactName: draft.contactName, phone: draft.phone, businessName: draft.businessName, industry: draft.industry, projectType: draft.projectType, selectedProduct, selectedAddons: draft.selectedAddons }) });
       if (!response.ok) throw new Error("No pudimos guardar tu solicitud.");
       const data = await response.json() as { saved?: boolean; previewMode?: boolean };
       if (data.previewMode) {
@@ -148,16 +153,74 @@ export function QuoteConfigurator() {
     } finally { setSaving(false); }
   }
 
+  function openPaymentOptions(mode: "deposit" | "full") {
+    setPendingPaymentMode(mode);
+    setShowPaymentOptions(true);
+    setError("");
+  }
+
+    async function handleTransferPayment() {
+    setTransferLoading(true);
+    setError("");
+    const requestId = crypto.randomUUID();
+    const mode = pendingPaymentMode;
+    const amount = mode === "deposit" ? quote.deposit : quote.total;
+    const clabe = "638180000152499550";
+    const bankName = "NU México";
+    const beneficiary = "Punto Digital";
+    const customerName = draft.businessName || "Cliente";
+
+    try {
+      const response = await fetch("/api/send-transfer-email", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          customerName,
+          customerEmail: draft.email,
+          productName: quote.product.name,
+          addonNames: quote.addons.map((a) => a.name),
+          mode,
+          amount,
+          clabe,
+          bankName,
+          beneficiary,
+          whatsappNumber: SITE.whatsapp,
+          requestId,
+        }),
+      });
+
+      const data = await response.json() as { orderNumber: string; amount: string; emailSent: boolean; error?: string; };
+      if (!response.ok) throw new Error(data.error ?? "No pudimos registrar tu pedido.");
+
+      const params = new URLSearchParams();
+      params.set("order", data.orderNumber);
+      params.set("amount", data.amount);
+      params.set("mode", mode);
+      params.set("product", quote.product.name);
+      window.location.href = `/comprar/transferencia?${params.toString()}`;
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "No pudimos procesar tu pedido.");
+      setTransferLoading(false);
+    }
+  }
+
+  function closePaymentOptions() {
+    setShowPaymentOptions(false);
+  }
+
   async function checkout(mode: "deposit" | "full") {
+    if (checkoutLoading) return;
     setCheckoutLoading(mode);
+    setShowPaymentOptions(false);
     setError("");
     try {
-      if (!saved) await saveLead();
-      const response = await fetch("/api/checkout", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ productSlug: selectedProduct, addonSlugs: draft.selectedAddons, mode, email: draft.email }) });
+      checkoutRequestId.current ||= crypto.randomUUID();
+      const response = await fetch("/api/checkout", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ productSlug: selectedProduct, addonSlugs: draft.selectedAddons, mode, email: draft.email, requestId: checkoutRequestId.current }) });
       const data = await response.json() as { url?: string; error?: string };
       if (!response.ok || !data.url) throw new Error(data.error ?? "No pudimos iniciar el pago.");
       window.location.href = data.url;
     } catch (caught) {
+      checkoutRequestId.current = "";
       setError(caught instanceof Error ? caught.message : "No pudimos iniciar el pago.");
       setCheckoutLoading("");
     }
@@ -173,6 +236,7 @@ export function QuoteConfigurator() {
     setSaved(false);
     setError("");
     setCheckoutLoading("");
+    checkoutRequestId.current = "";
     localStorage.removeItem("pd-quote-draft");
     localStorage.removeItem("pd-quote-session-v2");
   }
@@ -203,7 +267,51 @@ export function QuoteConfigurator() {
 
           {step === 4 && <div className="form-step"><div className="form-heading"><span>05 — Tu negocio</span><h1>Dale nombre a la idea.</h1><p>El nombre, servicio y mensaje se reflejan inmediatamente en tu demostración.</p></div><div className="field-grid"><label className="field"><span>Nombre comercial *</span><input value={draft.businessName} onChange={(event) => update("businessName", event.target.value)} placeholder="Ej. Estudio Norte" /></label><label className="field"><span>Servicio principal</span><input value={draft.primaryService} onChange={(event) => update("primaryService", event.target.value)} placeholder="Ej. Consultoría financiera" /></label><label className="field field--wide"><span>Describe brevemente tu negocio</span><textarea value={draft.businessDescription} onChange={(event) => update("businessDescription", event.target.value)} rows={3} /></label><label className="field"><span>Tu nombre *</span><input value={draft.contactName} onChange={(event) => update("contactName", event.target.value)} /></label><label className="field"><span>Correo *</span><input type="email" value={draft.email} onChange={(event) => update("email", event.target.value)} /></label><label className="field"><span>Teléfono o WhatsApp</span><input value={draft.phone} onChange={(event) => update("phone", event.target.value)} /></label><label className="field"><span>Ciudad</span><input value={draft.city} onChange={(event) => update("city", event.target.value)} /></label><label className="field"><span>Fecha objetivo</span><input type="date" value={draft.targetDate} onChange={(event) => update("targetDate", event.target.value)} /></label></div><label className="consent"><input type="checkbox" required checked={consent} onChange={(event) => setConsent(event.target.checked)} /> Acepto el tratamiento de mis datos para recibir esta propuesta. Consulta el <Link href="/aviso-de-privacidad">aviso de privacidad</Link>.</label></div>}
 
-          {step === 5 && <div className="form-step proposal-step"><div className="form-heading"><span>06 — Recomendación</span><h1>Este es tu punto de partida.</h1><p>La estimación se confirma después de revisar el alcance. No es una fecha de entrega definitiva.</p></div><div className="product-selector">{PRODUCTS.map((product) => <button type="button" aria-pressed={selectedProduct === product.slug} key={product.slug} className={selectedProduct === product.slug ? "is-selected" : ""} onClick={() => { setSelectedProduct(product.slug); setProductOverride(true); }}><span>{product.eyebrow}</span><strong>{product.name}</strong><b>{product.price ? formatMoney(product.price) : "A medida"}</b></button>)}</div><div className="quote-summary"><div><span>Paquete base</span><b>{quote.product.price ? formatMoney(quote.base) : "Por definir"}</b></div><div><span>Complementos</span><b>{formatMoney(quote.extras)}</b></div><div className="quote-total"><span>Total estimado</span><b>{quote.product.price ? formatMoney(quote.total) : "Cotización personalizada"}</b></div>{quote.product.price && <div><span>Anticipo sugerido ({quote.product.depositPercentage}%)</span><b>{formatMoney(quote.deposit)}</b></div>}<p><Clock3 size={15} /> Tiempo aproximado: {quote.product.timeline}</p></div>{error && <p className="form-error" role="alert">{error}</p>}<div className="proposal-actions"><button className="button" onClick={saveLead} disabled={saving || saved}>{saving ? <Loader2 className="spin" size={18} /> : saved ? <CheckCircle2 size={18} /> : <Send size={18} />}{saved ? "Propuesta guardada" : "Solicitar propuesta"}</button>{quote.product.price && <><button className="button button--dark" onClick={() => checkout("deposit")} disabled={!!checkoutLoading}>{checkoutLoading === "deposit" ? <Loader2 className="spin" size={18} /> : <CreditCard size={18} />}Pagar anticipo</button><button className="button button--outline" onClick={() => checkout("full")} disabled={!!checkoutLoading}>{checkoutLoading === "full" ? <Loader2 className="spin" size={18} /> : null}Pagar total</button></>}</div></div>}
+          {step === 5 && <div className="form-step proposal-step"><div className="form-heading"><span>06 — Recomendación</span><h1>Este es tu punto de partida.</h1><p>La estimación se confirma después de revisar el alcance. No es una fecha de entrega definitiva.</p></div><div className="product-selector">{PRODUCTS.map((product) => <button type="button" aria-pressed={selectedProduct === product.slug} key={product.slug} className={selectedProduct === product.slug ? "is-selected" : ""} onClick={() => { setSelectedProduct(product.slug); setProductOverride(true); }}><span>{product.eyebrow}</span><strong>{product.name}</strong><b>{product.price ? formatMoney(product.price) : "A medida"}</b></button>)}</div><div className="quote-summary"><div><span>Paquete base</span><b>{quote.product.price ? formatMoney(quote.base) : "Por definir"}</b></div><div><span>Complementos</span><b>{formatMoney(quote.extras)}</b></div><div className="quote-total"><span>Total estimado</span><b>{quote.product.price ? formatMoney(quote.total) : "Cotización personalizada"}</b></div>{quote.product.price && <div><span>Anticipo sugerido ({quote.product.depositPercentage}%)</span><b>{formatMoney(quote.deposit)}</b></div>}<p><Clock3 size={15} /> Tiempo aproximado: {quote.product.timeline}</p></div>{error && <p className="form-error" role="alert">{error}</p>}<div className="proposal-actions"><button className="button" onClick={saveLead} disabled={saving || saved}>{saving ? <Loader2 className="spin" size={18} /> : saved ? <CheckCircle2 size={18} /> : <Send size={18} />}{saved ? "Propuesta guardada" : "Solicitar propuesta"}</button>{quote.product.price && <><button className="button button--dark" onClick={() => openPaymentOptions("deposit")} disabled={!!checkoutLoading || saved}>{checkoutLoading === "deposit" ? <Loader2 className="spin" size={18} /> : <CreditCard size={18} />}Pagar anticipo</button><button className="button button--outline" onClick={() => openPaymentOptions("full")} disabled={!!checkoutLoading || saved}>{checkoutLoading === "full" ? <Loader2 className="spin" size={18} /> : null}Pagar total</button></>}</div></div>}
+
+          {showPaymentOptions && (
+            <div className="payment-options-overlay" onClick={closePaymentOptions}>
+              <div className="payment-options-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="payment-options-header">
+                  <h2>Elige cómo pagar</h2>
+                  <p>{pendingPaymentMode === "deposit" ? `Anticipo: ${formatMoney(quote.deposit)}` : `Total: ${formatMoney(quote.total)}`}</p>
+                  <button className="payment-options-close" onClick={closePaymentOptions} aria-label="Cerrar">&times;</button>
+                </div>
+                <div className="payment-options-grid">
+                  <div className="payment-option-card">
+                    <div className="payment-option-icon"><Building2 size={28} /></div>
+                    <h3>Transferencia bancaria</h3>
+                    <p>Deposita o transfiere a la cuenta de Punto Digital.</p>
+                    <div className="bank-details">
+                      <div><span>CLABE</span><code>638180000152499550</code></div>
+                      <div><span>Banco</span><strong>NU México</strong></div>
+                      <div><span>Beneficiario</span><strong>Punto Digital</strong></div>
+                    </div>
+                    <p className="transfer-instructions">Después de hacer la transferencia, envía el comprobante junto con tu pedido a nuestro WhatsApp.</p>
+                    <button
+                      className="button button--dark"
+                      onClick={handleTransferPayment}
+                      disabled={transferLoading}
+                    >
+                      {transferLoading ? <Loader2 className="spin" size={18} /> : <Building2 size={18} />}
+                      Registrar pedido y continuar
+                    </button>
+                    <p className="payment-note">Tu proyecto comenzará una vez que confirmemos el pago.</p>
+                  </div>
+                  <div className="payment-option-card">
+                    <div className="payment-option-icon"><CreditCard size={28} /></div>
+                    <h3>Tarjeta de crédito o débito</h3>
+                    <p>Pago seguro procesado por Stripe. Aceptamos Visa, Mastercard y AMEX.</p>
+                    <button className="button" onClick={() => checkout(pendingPaymentMode)} disabled={!!checkoutLoading}>
+                      {checkoutLoading ? <Loader2 className="spin" size={18} /> : <Banknote size={18} />}
+                      Pagar con tarjeta
+                    </button>
+                    <p className="payment-note">Serás redirigido a la página segura de Stripe para completar tu pago.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {error && step !== 5 && <p className="form-error" role="alert">{error}</p>}
           <div className="form-navigation"><button className="back-button" disabled={step === 0} onClick={() => setStep((value) => Math.max(0, value - 1))}><ArrowLeft size={17} /> Anterior</button>{step < 5 && <button className="button" onClick={next}>Continuar <ArrowRight size={17} /></button>}</div>

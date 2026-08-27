@@ -2,7 +2,7 @@
 
 Sitio comercial y plataforma inicial de contratación para **Punto Digital**, una empresa mexicana dedicada al diseño, desarrollo, publicación y mantenimiento de páginas web profesionales.
 
-La aplicación reúne una página comercial premium, experiencias visuales interactivas, un cotizador con preview modular, captura persistente de prospectos, checkout preparado para Stripe, onboarding, portal de cliente y panel administrativo inicial.
+La aplicación reúne una página comercial premium, experiencias visuales interactivas, un cotizador con preview modular, captura persistente en Cloudflare D1, checkout preparado para Stripe y superficies privadas protegidas para futura conexión de datos por proyecto.
 
 ## Requisitos
 
@@ -26,8 +26,10 @@ La aplicación se abre normalmente en `http://localhost:3000`.
 ```bash
 npm run dev          # entorno local
 npm run build        # build compatible con Cloudflare Workers
+npm run build:vercel # build alternativo con Next.js/Webpack
 npm test             # build y pruebas de renderizado
 npm run lint         # revisión estática
+npm run typecheck    # TypeScript estricto
 npm run db:generate  # genera migraciones Drizzle desde db/schema.ts
 ```
 
@@ -49,8 +51,9 @@ npm run db:generate  # genera migraciones Drizzle desde db/schema.ts
 2. En `/cotizador` configura proyecto, objetivo, funciones, estilo y datos.
 3. El precio se recalcula usando la configuración central, nunca desde un monto confiado al navegador.
 4. La solicitud se guarda como prospecto en D1.
-5. Si existen credenciales de Stripe, el servidor crea Stripe Checkout; sin credenciales se utiliza una confirmación de demostración claramente identificada y no se realiza ningún cargo.
-6. El onboarding utiliza un token de proyecto y el portal organiza avances, archivos, pagos y comentarios.
+5. Si existen Stripe, D1 y webhook, el servidor crea un pedido pendiente y después una sesión de Stripe idempotente. Sin credenciales se utiliza una confirmación de demostración claramente identificada y no se realiza ningún cargo.
+6. El webhook valida firma, importe, moneda, producto y complementos antes de registrar el pago y crear el proyecto.
+7. Onboarding, portal y administración permanecen cerrados hasta habilitar y completar autorización por recurso.
 
 ## Variables de entorno
 
@@ -60,6 +63,8 @@ Copia `.env.example`. Para checkout de prueba son necesarias:
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
+PRIVATE_SURFACES_ENABLED=false
+ADMIN_EMAIL=
 ```
 
 No uses claves de producción durante desarrollo. No expongas `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, claves administrativas ni secretos de correo en variables `NEXT_PUBLIC_*`.
@@ -72,11 +77,11 @@ El esquema inicial está en `drizzle/0000_little_tana_nile.sql`. `db/seed.sql` c
 
 ## Archivos
 
-Los binarios se almacenan en R2 mediante el binding `UPLOADS`. La API limita tamaño a 10 MB y acepta PNG, JPEG, WebP, SVG y PDF. La metadata relacional puede vincularse en D1 con `project_files`. Antes de producción, conecta la identidad del usuario y valida pertenencia al proyecto en el servidor.
+El binding R2 `UPLOADS` está declarado, pero la API de carga permanece deshabilitada. Antes de habilitarla deben implementarse identidad, autorización por proyecto, validación por firma binaria, sanitización o rechazo de SVG, claves privadas no predecibles y descarga autorizada.
 
 ## Stripe y webhooks
 
-`/api/checkout` recalcula el monto del paquete y complementos en el servidor. `/api/stripe/webhook` verifica la firma HMAC, limita la antigüedad del evento y registra el identificador único en `webhook_events` para evitar doble procesamiento.
+`/api/checkout` recalcula el monto del paquete y complementos en el servidor, crea el pedido en D1 y utiliza una clave de idempotencia. `/api/stripe/webhook` verifica la firma HMAC, limita la antigüedad, valida importe y moneda, registra eventos únicos y crea pago/proyecto únicamente para sesiones confirmadas.
 
 Antes de activar producción:
 
@@ -84,7 +89,7 @@ Antes de activar producción:
 2. Configurar `STRIPE_SECRET_KEY` y `STRIPE_WEBHOOK_SECRET` como secretos.
 3. Registrar el endpoint `/api/stripe/webhook`.
 4. Ejecutar pagos de prueba de anticipo y total.
-5. Completar la creación del pedido/proyecto a partir de eventos confirmados.
+5. Probar en Stripe test mode pagos completos, anticipos, métodos asíncronos y reenvío de eventos.
 
 ## Seguridad y privacidad
 
@@ -96,9 +101,9 @@ Antes de activar producción:
 - Páginas legales marcadas como pendientes de revisión profesional.
 - No se solicitan contraseñas mediante campos ordinarios.
 
-Los paneles incluidos son una primera superficie visual. Antes de manejar datos reales de clientes o administradores, debe conectarse autenticación y autorización de producción en todas las lecturas y escrituras.
+Las superficies `/cliente` y `/admin` están cerradas por defecto mediante `PRIVATE_SURFACES_ENABLED=false`. Al habilitarlas requieren identidad proporcionada por la plataforma; `/admin` además exige `ADMIN_EMAIL`. No consultan datos reales todavía porque falta autorización por proyecto/recurso.
 
 ## Producción
 
-El sitio está preparado para Sites y Cloudflare Workers. El dominio canónico objetivo es `https://punto-digital.mx`. Antes de enlazarlo completa Stripe, correo, analítica, documentos legales, políticas de acceso y pruebas de navegación en dispositivos reales.
+El despliegue principal es Sites sobre Cloudflare Workers, con D1 (`DB`) y R2 (`UPLOADS`). El dominio canónico es `https://www.ipunto.digital/`. El build alternativo de Vercel se conserva para la superficie pública y usa Webpack; sin bindings D1 los formularios funcionan en modo preliminar y los pagos reales se deshabilitan de forma segura.
 # punto-digital

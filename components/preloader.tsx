@@ -9,18 +9,18 @@ export function Preloader() {
   useEffect(() => {
     if (sessionStorage.getItem("pd-intro-seen")) return;
     const show = window.setTimeout(() => setVisible(true), 0);
-    const leave = window.setTimeout(() => setLeaving(true), 900);
+    const leave = window.setTimeout(() => setLeaving(true), 350);
     const hide = window.setTimeout(() => {
       setVisible(false);
       sessionStorage.setItem("pd-intro-seen", "true");
-    }, 1350);
+    }, 650);
     return () => { window.clearTimeout(show); window.clearTimeout(leave); window.clearTimeout(hide); };
   }, []);
 
   if (!visible) return null;
   return (
     <div className={`preloader ${leaving ? "preloader--leaving" : ""}`} role="status" aria-label="Cargando Punto Digital">
-      <button onClick={() => setVisible(false)}>Omitir</button>
+      <button onClick={() => { setVisible(false); sessionStorage.setItem("pd-intro-seen", "true"); }}>Omitir introducción</button>
       <div className="preloader-orbit"><span /><span /><span /><span /></div>
       <div className="preloader-logo"><strong>Punto<span>.</span></strong> Digital</div>
     </div>

@@ -14,7 +14,7 @@ export function SiteFooter() {
         <div className="footer-brand">
           <Link href="/" className="wordmark wordmark--light"><span className="brand-mark"><i /><i /><i /></span><span><strong>Punto<span>.</span></strong> Digital</span></Link>
           <p>Diseñamos el lugar donde tu negocio se ve, se entiende y se elige.</p>
-          <a className="footer-email" href="mailto:hola@punto-digital.mx">hola@punto-digital.mx <ArrowUpRight size={18} /></a>
+          <Link className="footer-email" href="/contacto">Contacto <ArrowUpRight size={18} /></Link>
         </div>
         {columns.map((column) => (
           <div className="footer-column" key={column.title}>

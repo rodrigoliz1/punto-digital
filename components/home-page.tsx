@@ -7,6 +7,7 @@ import {
 import { PRODUCTS, formatMoney } from "@/config/products";
 import { DigitalOrbit } from "@/components/digital-orbit";
 import { BeforeAfter } from "@/components/before-after";
+import { ClientShowcase } from "@/components/client-showcase";
 import { IndustryDemo } from "@/components/industry-demo";
 import { Preloader } from "@/components/preloader";
 
@@ -19,9 +20,9 @@ const signals = [
 ] as const;
 
 const services = [
-  { icon: Layers3, index: "01", title: "Landing pages", text: "Una oferta, una historia clara y una ruta directa al contacto.", price: "Desde $9,900", className: "service-card--landing", visual: <div className="mini-landing"><span /><b /><i /><i /></div> },
-  { icon: BriefcaseBusiness, index: "02", title: "Sitios corporativos", text: "La presencia completa para explicar por qué tu empresa es la elección correcta.", price: "Desde $18,900", className: "service-card--corporate", visual: <div className="mini-corporate"><span /><span /><span /></div> },
-  { icon: ShoppingBag, index: "03", title: "Tiendas en línea", text: "Una experiencia de compra confiable, rápida y lista para operar.", price: "Desde $39,900", className: "service-card--shop", visual: <div className="mini-shop"><span /><span /><span /></div> },
+  { icon: Layers3, index: "01", title: "Landing pages", text: "Una oferta, una historia clara y una ruta directa al contacto.", price: "Desde $7,900", className: "service-card--landing", visual: <div className="mini-landing"><span /><b /><i /><i /></div> },
+  { icon: BriefcaseBusiness, index: "02", title: "Sitios corporativos", text: "La presencia completa para explicar por qué tu empresa es la elección correcta.", price: "Desde $14,900", className: "service-card--corporate", visual: <div className="mini-corporate"><span /><span /><span /></div> },
+  { icon: ShoppingBag, index: "03", title: "Tiendas en línea", text: "Una experiencia de compra confiable, rápida y lista para operar.", price: "Desde $29,900", className: "service-card--shop", visual: <div className="mini-shop"><span /><span /><span /></div> },
   { icon: Bot, index: "04", title: "Portales y sistemas", text: "Reservaciones, usuarios, paneles e integraciones que trabajan contigo.", price: "Cotización", className: "service-card--systems", visual: <div className="mini-system"><i /><i /><i /><i /></div> },
   { icon: Wrench, index: "05", title: "Mantenimiento", text: "Hosting, seguridad, respaldos y mejoras sin carga técnica para ti.", price: "Desde $590/mes", className: "service-card--care", visual: <div className="mini-care"><span><Gauge size={34} /></span><i /></div> },
   { icon: Sparkles, index: "06", title: "Automatizaciones", text: "Conectamos tareas repetitivas para que tu negocio gane tiempo.", price: "A medida", className: "service-card--auto", visual: <div className="mini-auto"><i /><i /><i /><i /><i /></div> },
@@ -140,6 +141,8 @@ export function HomePage() {
           <div className="faq-heading"><div className="eyebrow"><span /> Preguntas frecuentes</div><h2>Lo importante,<br />dicho con <em>claridad.</em></h2><p>¿Tienes otra pregunta?</p><Link href="/contacto">Hablemos de ella <ArrowRight size={16} /></Link></div>
           <div className="faq-list">{faqs.map(([question, answer]) => <details key={question}><summary>{question}<span>+</span></summary><p>{answer}</p></details>)}</div>
         </section>
+
+        <ClientShowcase />
 
         <section className="final-cta">
           <div className="cta-points" aria-hidden="true" />

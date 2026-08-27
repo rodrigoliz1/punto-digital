@@ -1,7 +1,7 @@
 export const SITE = {
   name: "Punto Digital",
-  domain: "punto-digital.mx",
-  url: "https://punto-digital.mx",
+  domain: "www.ipunto.digital",
+  url: "https://www.ipunto.digital",
   description: "Páginas web profesionales, rápidas y diseñadas para convertir visitas en oportunidades reales.",
   slogan: "Tu punto de partida digital.",
   whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "",
