@@ -85,9 +85,27 @@ export function HomePage() {
         </section>
 
         <section className="transformation-section">
-          <div className="transformation-copy"><div className="eyebrow eyebrow--light"><span /> La transformación</div><h2>De una buena idea a una presencia que trabaja por ti.</h2><p>Conectamos cada decisión para que el resultado no solo se vea bien: se entienda y mueva al cliente.</p></div>
+          <div className="transformation-copy">
+            <div className="eyebrow eyebrow--light"><span /> La transformación</div>
+            <h2>De una buena idea a una presencia que trabaja por ti.</h2>
+            <p>Conectamos cada decisión para que el resultado no solo se vea bien: se entienda y mueva al cliente.</p>
+          </div>
           <div className="steps-rail">
-            {["Negocio", "Identidad", "Diseño", "Publicación", "Oportunidades"].map((item, index) => <div className="rail-step" key={item}><span>0{index + 1}</span><i /><strong>{item}</strong><p>{["Escuchamos lo que haces diferente.", "Traducimos tu esencia a un sistema visual.", "Diseñamos una ruta clara para tu cliente.", "Publicamos una base rápida y segura.", "Medimos y preparamos el siguiente paso."][index]}</p></div>)}
+            {["Negocio", "Identidad", "Diseño", "Publicación", "Oportunidades"].map((item, index) => (
+              <div className="rail-step" key={item}>
+                <span>0{index + 1}</span>
+                <strong>{item}</strong>
+                <p>
+                  {[
+                    "Escuchamos lo que haces diferente.",
+                    "Traducimos tu esencia a un sistema visual.",
+                    "Diseñamos una ruta clara para tu cliente.",
+                    "Publicamos una base rápida y segura.",
+                    "Medimos y preparamos el siguiente paso.",
+                  ][index]}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
 
