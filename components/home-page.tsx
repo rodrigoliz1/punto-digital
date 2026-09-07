@@ -30,6 +30,7 @@ const services = [
 
 const projects = [
   { name: "Lexora", industry: "Despacho jurídico", goal: "Convertir experiencia en confianza", color: "#172554", accent: "#dbeafe", layout: "project-one" },
+  { name: "Mi Boletín Judicial", industry: "Legal Tech", goal: "Monitoreo judicial automatizado", color: "#0c1c38", accent: "#60a5fa", layout: "project-two" },
   { name: "Nova Dental", industry: "Clínica dental", goal: "Facilitar citas desde cualquier dispositivo", color: "#115e59", accent: "#ccfbf1", layout: "project-two" },
   { name: "Brasa Norte", industry: "Restaurante", goal: "Llevar el ambiente del lugar a la pantalla", color: "#7c2d12", accent: "#ffedd5", layout: "project-three" },
 ] as const;

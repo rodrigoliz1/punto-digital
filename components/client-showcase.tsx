@@ -11,8 +11,8 @@ const clients = [
     accent: "#c9a24e",
     logo: (
       <svg viewBox="0 0 120 40" fill="none" className="client-logo-svg">
-        <text x="0" y="28" fill="#c9a24e" fontFamily="serif" fontSize="22" fontWeight="bold" letterSpacing="0.04em">GENTLEMAN</text>
-        <text x="0" y="38" fill="#8a7a5a" fontFamily="serif" fontSize="9" letterSpacing="0.35em">ART BARBER SHOP</text>
+        <text x="0" y="28" fill="#c9a24e" fontFamily="serif" fontSize="13" fontWeight="bold" letterSpacing="0.04em">GENTLEMAN ART</text>
+        <text x="0" y="38" fill="#8a7a5a" fontFamily="serif" fontSize="9" letterSpacing="0.35em">BARBER SHOP</text>
         <line x1="0" y1="12" x2="38" y2="12" stroke="#c9a24e" strokeWidth="0.8" />
       </svg>
     ),
@@ -27,8 +27,8 @@ const clients = [
     accent: "#c9b068",
     logo: (
       <svg viewBox="0 0 120 40" fill="none" className="client-logo-svg">
-        <text x="0" y="30" fill="white" fontFamily="sans-serif" fontSize="32" fontWeight="800" letterSpacing="-0.04em">XS</text>
-        <text x="52" y="24" fill="#c9b068" fontFamily="sans-serif" fontSize="8" fontWeight="600" letterSpacing="0.35em">ABOGADOS</text>
+        <text x="0" y="30" fill="white" fontFamily="serif" fontSize="32" fontWeight="800" letterSpacing="-0.04em">XS</text>
+        <text x="52" y="24" fill="#c9b068" fontFamily="serif" fontSize="10" fontWeight="600" letterSpacing="0.15em">ABOGADOS</text>
         <line x1="52" y1="29" x2="110" y2="29" stroke="#c9b068" strokeWidth="0.8" />
         <text x="52" y="38" fill="#8899aa" fontFamily="sans-serif" fontSize="6" letterSpacing="0.15em">FIRMA LEGAL</text>
       </svg>
@@ -44,10 +44,27 @@ const clients = [
     accent: "#3b82f6",
     logo: (
       <svg viewBox="0 0 120 40" fill="none" className="client-logo-svg">
-        <rect x="0" y="8" width="26" height="26" rx="5" fill="#3b82f6" />
+        <rect x="0" y="8" width="26" height="26" rx="5" fill="#0d3677" />
         <text x="5" y="29" fill="white" fontFamily="sans-serif" fontSize="18" fontWeight="800">V</text>
         <text x="32" y="30" fill="white" fontFamily="sans-serif" fontSize="20" fontWeight="700" letterSpacing="-0.02em">VIGILEX</text>
         <text x="32" y="38" fill="#60a5fa" fontFamily="sans-serif" fontSize="6" letterSpacing="0.2em">LEGAL TECH</text>
+      </svg>
+    ),
+  },
+  {
+    name: "MI BOLETÍN JUDICIAL",
+    subtitle: "Legal Tech",
+    url: "https://www.miboletin.lat/",
+    description: "Monitoreo, consulta y alertas automáticas de acuerdos judiciales en México.",
+    palette: "from-blue-600 to-indigo-700",
+    bg: "#091222",
+    accent: "#38bdf8",
+    logo: (
+      <svg viewBox="0 0 150 40" fill="none" className="client-logo-svg">
+        <rect x="0" y="8" width="26" height="26" rx="5" fill="#7d2302" />
+        <text x="3" y="27" fill="white" fontFamily="sans-serif" fontSize="12" fontWeight="900" letterSpacing="-0.05em">MB</text>
+        <text x="32" y="26" fill="white" fontFamily="sans-serif" fontSize="15" fontWeight="800" letterSpacing="-0.02em">MI BOLETÍN</text>
+        <text x="32" y="37" fill="#fdfeff" fontFamily="sans-serif" fontSize="12" fontWeight="700" letterSpacing="0.2em">JUDICIAL</text>
       </svg>
     ),
   },
