@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
 const clients = [
@@ -131,7 +132,7 @@ export function ClientShowcase() {
 
       <div className="client-cta">
         <p>¿Quieres ser el siguiente?</p>
-        <a href="/cotizador" className="button">Cotizar mi proyecto <ArrowUpRight size={16} /></a>
+        <Link href="/cotizador" className="button">Cotizar mi proyecto <ArrowUpRight size={16} /></Link>
       </div>
     </section>
   );

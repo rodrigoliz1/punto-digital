@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   const parsed = transferSchema.safeParse(await readJson(request));
   if (!parsed.success) return Response.json({ error: "Datos de transferencia inválidos." }, { status: 400 });
 
-  const { customerName, customerEmail, productName, addonNames, mode, amount, clabe, bankName, beneficiary, whatsappNumber, requestId } = parsed.data;
+  const { customerName, customerEmail, productName, addonNames, mode, amount, clabe, bankName, beneficiary, whatsappNumber } = parsed.data;
   const orderNumber = generateOrderNumber();
   const origin = configuredSiteOrigin(request);
   const conceptLabel = mode === "deposit" ? "Anticipo" : "Pago total";

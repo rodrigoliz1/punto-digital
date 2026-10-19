@@ -69,5 +69,11 @@ test("data and security foundations are present", async () => {
   assert.match(upload, /carga está deshabilitada/);
   assert.match(admin, /force-dynamic/);
   assert.match(client, /force-dynamic/);
-  assert.match(legal, /Pendiente de revisión profesional/);
+  // Las páginas legales tienen texto propio (ya no borradores con aviso de revisión pendiente).
+  for (const slug of ["aviso-de-privacidad", "terminos", "politica-de-cancelacion", "politica-de-reembolsos", "cookies"]) {
+    assert.match(legal, new RegExp(`"?${slug}"?: \\(\\s*<>`), `contenido legal propio para ${slug}`);
+  }
+  assert.match(legal, /LFPDPPP/);
+  assert.match(legal, /Derechos ARCO/);
+  assert.equal((legal.match(/Última actualización:/g) ?? []).length >= 5, true);
 });
