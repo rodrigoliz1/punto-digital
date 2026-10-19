@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LogoutButton } from "@/components/auth/forms";
 import { Building2, CalendarClock, ClipboardCheck, Coins, LayoutDashboard, Megaphone, MonitorSmartphone, Palette, Radar, ScrollText, Settings, ShieldOff, Trophy } from "lucide-react";
 
 const BASE = "/admin/prospectos";
@@ -39,7 +40,7 @@ export function ProspectShell({ children, email, roleLabel }: { children: React.
       <section className="dashboard-main po-main">
         <header>
           <div><span className="status-dot" /> Prospección asistida · Guadalajara y Zapopan</div>
-          <div><span className="po-role">{roleLabel}</span><div className="user-avatar" title={email}>{initials}</div></div>
+          <div><span className="po-role">{roleLabel}</span><div className="user-avatar" title={email}>{initials}</div><LogoutButton /></div>
         </header>
         <div className="po-content">{children}</div>
       </section>

@@ -161,7 +161,7 @@ export async function getSettings(db: D1Binding) {
   const [agents, budgets, team, jobs] = await Promise.all([
     Promise.all(AGENTS.map((agent) => getAgentConfig(db, agent))),
     db.prepare("SELECT provider, monthly_limit_usd_cents, enabled, updated_by, updated_at FROM prospect_provider_budgets").all<{ provider: string; monthly_limit_usd_cents: number; enabled: number; updated_by: string; updated_at: string }>(),
-    db.prepare("SELECT email, role, active, added_by, updated_at FROM prospect_team ORDER BY email").all<{ email: string; role: string; active: number; added_by: string; updated_at: string }>(),
+    db.prepare("SELECT t.email, t.role, t.active, t.added_by, t.updated_at, a.email IS NOT NULL AS has_account, a.last_login_at FROM prospect_team t LEFT JOIN staff_accounts a ON a.email = t.email ORDER BY t.email").all<{ email: string; role: string; active: number; added_by: string; updated_at: string; has_account: number; last_login_at: string | null }>(),
     db.prepare("SELECT agent, status, COUNT(*) AS n FROM prospect_jobs GROUP BY agent, status").all<{ agent: string; status: string; n: number }>(),
   ]);
   return { agents, budgets: budgets.results, team: team.results, jobs: jobs.results };

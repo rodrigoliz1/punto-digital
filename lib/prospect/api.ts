@@ -27,7 +27,7 @@ type Handler<T> = (ctx: ProspectContext, body: T) => Promise<unknown>;
 export async function mutation<S extends z.ZodTypeAny>(request: Request, minimum: Role, schema: S, handler: Handler<z.infer<S>>) {
   const rejected = requireJsonRequest(request, 200_000);
   if (rejected) return rejected;
-  const ctx = await requireProspectApi(minimum);
+  const ctx = await requireProspectApi(request, minimum);
   if (ctx instanceof Response) return ctx;
   try {
     const body = schema.parse((await readJson(request)) ?? {});
@@ -37,8 +37,8 @@ export async function mutation<S extends z.ZodTypeAny>(request: Request, minimum
   }
 }
 
-export async function query(minimum: Role, handler: (ctx: ProspectContext) => Promise<unknown>) {
-  const ctx = await requireProspectApi(minimum);
+export async function query(request: Request, minimum: Role, handler: (ctx: ProspectContext) => Promise<unknown>) {
+  const ctx = await requireProspectApi(request, minimum);
   if (ctx instanceof Response) return ctx;
   try {
     return Response.json(await handler(ctx), { headers: NO_STORE });

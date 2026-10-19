@@ -16,7 +16,18 @@ const SIGN_IN_PATH = "/signin-with-chatgpt";
 const SIGN_OUT_PATH = "/signout-with-chatgpt";
 const CALLBACK_PATH = "/callback";
 
+/**
+ * Los encabezados `oai-authenticated-user-*` solo son confiables si la plataforma de hosting los
+ * elimina de toda solicitud entrante y los inyecta ella misma. Se ignoran salvo declaración
+ * explícita (PLATFORM_IDENTITY_HEADERS_TRUSTED=true) y nunca en Vercel. La administración y
+ * Prospect OS no los usan: dependen de la sesión del equipo (lib/auth).
+ */
+export function platformIdentityTrusted() {
+  return process.env.PLATFORM_IDENTITY_HEADERS_TRUSTED === "true" && !process.env.VERCEL;
+}
+
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
+  if (!platformIdentityTrusted()) return null;
   const requestHeaders = await headers();
   const email = requestHeaders.get(USER_EMAIL_HEADER);
   if (!email) return null;

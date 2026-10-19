@@ -134,3 +134,12 @@ details.po-details[open] > summary { margin-bottom: 12px; }
   .po-table-wrap { margin-inline: -16px; }
   .po-timeline li { grid-template-columns: 1fr; gap: 2px; }
 }
+.po-auth { min-height: 100vh; display: grid; place-items: center; padding: 40px 16px; background: radial-gradient(900px 500px at 80% -10%, rgb(40 120 255 / 18%), transparent 60%), var(--pd-surface); }
+.po-auth__card { width: min(440px, 100%); padding: 32px; border: 1px solid var(--pd-border); border-radius: 20px; background: white; box-shadow: var(--shadow); display: grid; gap: 16px; }
+.po-auth__card h1 { margin: 0; font-size: 30px; letter-spacing: -.04em; }
+.po-auth__card > p { margin: 0; font-size: 14px; }
+.po-auth__brand { font: 600 13px var(--font-manrope); color: var(--pd-navy-900); letter-spacing: -.01em; }
+.po-auth__brand b { color: var(--pd-blue-500); }
+.po-auth .po-form__grid, .po-auth .po-form { grid-template-columns: 1fr; }
+.po-secret { margin: 8px 0 0; padding: 10px; border-radius: 8px; background: white; font: 600 15px ui-monospace, Menlo, monospace; letter-spacing: .08em; overflow-wrap: anywhere; white-space: pre-wrap; }
+@media (max-width: 480px) { .po-auth__card { padding: 22px; } }

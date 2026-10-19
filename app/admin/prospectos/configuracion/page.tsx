@@ -15,6 +15,8 @@ const PROVIDER_OPTIONS: Record<string, Array<{ value: string; label: string }>> 
 export default async function SettingsPage() {
   const ctx = await requireProspectPage("/admin/prospectos/configuracion");
   const settings = await getSettings(ctx.db);
+  const ownerList = (process.env.ADMIN_EMAIL ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+  const ownerAccounts = ownerList.length ? (await ctx.db.prepare(`SELECT email, last_login_at FROM staff_accounts WHERE email IN (${ownerList.map(() => "?").join(",")})`).bind(...ownerList).all<{ email: string; last_login_at: string | null }>()).results : [];
   const admin = roleAtLeast(ctx.actor.role, "admin");
   const owner = ctx.actor.role === "owner";
   const credentials = [["GOOGLE_PLACES_API_KEY", Boolean(ctx.env.GOOGLE_PLACES_API_KEY)], ["ANTHROPIC_API_KEY", Boolean(ctx.env.ANTHROPIC_API_KEY)], ["OPENAI_API_KEY", Boolean(ctx.env.OPENAI_API_KEY)]] as const;
@@ -57,10 +59,19 @@ export default async function SettingsPage() {
           { name: "enabled", label: "Habilitado", type: "checkbox" },
         ]} /> : null}
       </Panel>
-      <Panel title="Equipo y roles" description="Los propietarios se definen en ADMIN_EMAIL. Lectura < Operador < Revisor < Administrador.">
-        <Table head={["Correo", "Rol", "Estado", "Agregado por"]}>
-          {settings.team.map((m) => <tr key={m.email}><td>{m.email}</td><td>{ROLE_LABELS[m.role as Role] ?? m.role}</td><td><Badge status={m.active ? "active" : "paused"} label={m.active ? "Activo" : "Inactivo"} /></td><td><small>{m.added_by}</small></td></tr>)}
+      <Panel title="Propietarios" description="Definidos en ADMIN_EMAIL. La primera cuenta se activa con AUTH_SETUP_TOKEN; las demás, con invitación de un propietario.">
+        <Table head={["Correo", "Acceso", ""]}>
+          {ownerList.map((email) => {
+            const account = ownerAccounts.find((a) => a.email === email);
+            return <tr key={email}><td>{email}</td><td><small>{account ? `Activado${account.last_login_at ? ` · último acceso ${date(account.last_login_at, true)}` : ""}` : "Sin activar"}</small></td><td>{owner && email !== ctx.actor.email ? <div className="po-actions"><JsonForm endpoint="/api/auth/invite" fields={[]} extra={{ email }} submitLabel={account ? "Restablecer acceso" : "Generar invitación"} resultMode="show" /><ActionButton endpoint="/api/auth/revoke-sessions" body={{ email }} label="Cerrar sesiones" variant="ghost" /></div> : null}</td></tr>;
+          })}
         </Table>
+      </Panel>
+      <Panel title="Equipo y roles" description="Los propietarios se definen en ADMIN_EMAIL. Lectura < Operador < Revisor < Administrador.">
+        <Table head={["Correo", "Rol", "Estado", "Acceso", "Agregado por", ""]}>
+          {settings.team.map((m) => <tr key={m.email}><td>{m.email}</td><td>{ROLE_LABELS[m.role as Role] ?? m.role}</td><td><Badge status={m.active ? "active" : "paused"} label={m.active ? "Activo" : "Inactivo"} /></td><td><small>{m.has_account ? `Activado${m.last_login_at ? ` · último acceso ${date(m.last_login_at, true)}` : ""}` : "Sin activar"}</small></td><td><small>{m.added_by}</small></td><td>{admin && m.email !== ctx.actor.email && (m.role !== "admin" || owner) ? <div className="po-actions"><JsonForm endpoint="/api/auth/invite" fields={[]} extra={{ email: m.email }} submitLabel={m.has_account ? "Restablecer acceso" : "Generar invitación"} resultMode="show" confirm={m.has_account ? "Se invalidará su contraseña y segundo factor actuales cuando use el enlace. ¿Continuar?" : undefined} /><ActionButton endpoint="/api/auth/revoke-sessions" body={{ email: m.email }} label="Cerrar sesiones" variant="ghost" /></div> : null}</td></tr>)}
+        </Table>
+        <p className="po-muted">Los enlaces de invitación son de un solo uso, vencen en 72 horas y se muestran una sola vez. Compártelos por un canal privado.</p>
         {admin ? <JsonForm endpoint="/api/prospect/settings/team" compact submitLabel="Guardar miembro" fields={[
           { name: "email", label: "Correo", type: "email", required: true },
           { name: "role", label: "Rol", type: "select", options: (["viewer", "operator", "reviewer", ...(owner ? ["admin"] : [])] as Role[]).map((r) => ({ value: r, label: ROLE_LABELS[r] })) },

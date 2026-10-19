@@ -4,8 +4,7 @@ import { prospectInputSchema, listFiltersSchema } from "@/lib/prospect/schemas";
 import { createProspect } from "@/lib/prospect/service";
 
 export async function GET(request: Request) {
-  const filters = listFiltersSchema.parse(Object.fromEntries(new URL(request.url).searchParams));
-  return query("viewer", (ctx) => listProspects(ctx.db, filters));
+  return query(request, "viewer", (ctx) => listProspects(ctx.db, listFiltersSchema.parse(Object.fromEntries(new URL(request.url).searchParams))));
 }
 
 export async function POST(request: Request) {
