@@ -14,7 +14,9 @@
     "test:unit": "node --import tsx --test --no-warnings tests/prospect/*.test.ts tests/auth/*.test.ts tests/db/*.test.ts",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "typecheck": "tsc --noEmit",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local --persist-to .wrangler/state --config db/wrangler.migrations.jsonc",
+    "test:e2e": "node scripts/e2e/browser-flow.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
