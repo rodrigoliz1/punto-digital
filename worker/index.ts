@@ -32,6 +32,7 @@ const worker = {
     const url = new URL(request.url);
     globalThis.__PUNTO_DIGITAL_DB__ = env.DB as unknown as D1Binding;
     globalThis.__PUNTO_DIGITAL_UPLOADS__ = env.UPLOADS as unknown as R2Binding;
+    globalThis.__PUNTO_DIGITAL_RUNTIME__ = "cloudflare";
 
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];

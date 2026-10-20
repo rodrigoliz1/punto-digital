@@ -1,5 +1,5 @@
 import { requireProspectApi } from "@/lib/prospect/access";
-import { idParam } from "@/lib/prospect/api";
+import { idParam, limitProspectIp } from "@/lib/prospect/api";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -7,6 +7,8 @@ type Params = { params: Promise<{ id: string }> };
 export async function GET(request: Request, { params }: Params) {
   const parsed = idParam.safeParse((await params).id);
   if (!parsed.success) return new Response("No encontrado", { status: 404 });
+  const limited = await limitProspectIp(request);
+  if (limited) return limited;
   const ctx = await requireProspectApi(request, "viewer");
   if (ctx instanceof Response) return ctx;
   const demo = await ctx.db.prepare("SELECT html FROM prospect_demos WHERE id = ?").bind(parsed.data).first<{ html: string }>();

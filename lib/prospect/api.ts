@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { readJson, requireJsonRequest } from "@/lib/request-security";
+import { enforceRateLimits, ipSubject, RATE_LIMITS, userSubject } from "@/lib/security/rate-limit";
 import { requireProspectApi } from "./access";
 import type { ProspectContext } from "./service";
 import { ProspectError, type Role } from "./types";
@@ -23,12 +24,27 @@ export function idempotencyKey(request: Request) {
 
 type Handler<T> = (ctx: ProspectContext, body: T) => Promise<unknown>;
 
-/** Mutaciones: JSON estricto, mismo origen (CSRF), sesión, rol mínimo y validación con Zod. */
-export async function mutation<S extends z.ZodTypeAny>(request: Request, minimum: Role, schema: S, handler: Handler<z.infer<S>>) {
+/** Límite por IP antes de autenticar (frena ataques sin sesión). */
+export async function limitProspectIp(request: Request) {
+  return enforceRateLimits([{ policy: RATE_LIMITS.prospectApiIp, subject: await ipSubject(request) }]);
+}
+
+/** Límite por persona tras autenticar; las acciones de agentes (con costo o captura web) tienen uno más estricto. */
+async function limitProspectUser(ctx: ProspectContext, heavy: boolean) {
+  const subject = await userSubject(ctx.actor.email);
+  return enforceRateLimits([{ policy: RATE_LIMITS.prospectApiUser, subject }, ...(heavy ? [{ policy: RATE_LIMITS.prospectAgent, subject }] : [])]);
+}
+
+/** Mutaciones: límite de solicitudes, JSON estricto, mismo origen (CSRF), sesión, rol mínimo y validación con Zod. */
+export async function mutation<S extends z.ZodTypeAny>(request: Request, minimum: Role, schema: S, handler: Handler<z.infer<S>>, options: { heavy?: boolean } = {}) {
+  const limitedIp = await limitProspectIp(request);
+  if (limitedIp) return limitedIp;
   const rejected = requireJsonRequest(request, 200_000);
   if (rejected) return rejected;
   const ctx = await requireProspectApi(request, minimum);
   if (ctx instanceof Response) return ctx;
+  const limitedUser = await limitProspectUser(ctx, options.heavy ?? false);
+  if (limitedUser) return limitedUser;
   try {
     const body = schema.parse((await readJson(request)) ?? {});
     return Response.json(await handler(ctx, body), { headers: NO_STORE });
@@ -38,6 +54,8 @@ export async function mutation<S extends z.ZodTypeAny>(request: Request, minimum
 }
 
 export async function query(request: Request, minimum: Role, handler: (ctx: ProspectContext) => Promise<unknown>) {
+  const limitedIp = await limitProspectIp(request);
+  if (limitedIp) return limitedIp;
   const ctx = await requireProspectApi(request, minimum);
   if (ctx instanceof Response) return ctx;
   try {

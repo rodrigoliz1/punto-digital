@@ -74,7 +74,7 @@ test("ninguna ruta privada responde con éxito sin una sesión válida", async (
       for (const params of paramSets(file)) {
         for (const [label, headers] of SPOOFED_HEADERS) {
           const response = await call(file, method, params, headers);
-          assert.ok([401, 403, 404, 405].includes(response.status), `${method} ${urlFor(file, params)} (${label}) respondió ${response.status}`);
+          assert.ok([401, 403, 404, 405, 429].includes(response.status), `${method} ${urlFor(file, params)} (${label}) respondió ${response.status}`);
           checked += 1;
         }
       }
@@ -94,6 +94,7 @@ test("las acciones de equipo en /api/auth exigen sesión", async () => {
 });
 
 test("escalamiento de privilegios: cada rol solo puede lo que le corresponde", async () => {
+  db.raw.exec("DELETE FROM request_rate_limits");
   const at = new Date();
   const owner = await enroll(db, OWNER, AUTH_ENV.AUTH_SETUP_TOKEN!, at);
   const sessions: Record<string, string> = { owner: owner.session.token };
@@ -138,6 +139,7 @@ test("escalamiento de privilegios: cada rol solo puede lo que le corresponde", a
 });
 
 test("inicio de sesión por la API: cookie segura y sin sesión ante credenciales falsas", async () => {
+  db.raw.exec("DELETE FROM request_rate_limits");
   const auth = join(ROOT, "app/api/auth/[action]/route.ts");
   const bad = await call(auth, "POST", { action: "login" }, {}, { email: OWNER, password: "incorrecta-123456", code: "000000" });
   assert.equal(bad.status, 401);
@@ -146,6 +148,7 @@ test("inicio de sesión por la API: cookie segura y sin sesión ante credenciale
 });
 
 test("con PROSPECT_OS_ENABLED apagado, el módulo no responde aunque haya sesión", async () => {
+  db.raw.exec("DELETE FROM request_rate_limits");
   const prospects = join(ROOT, "app/api/prospect/prospects/route.ts");
   process.env.PROSPECT_OS_ENABLED = "false";
   try {

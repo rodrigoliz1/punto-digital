@@ -2,6 +2,7 @@ import { z } from "zod";
 import { calculateQuote } from "@/config/products";
 import { readJson, requireJsonRequest } from "@/lib/request-security";
 import { getD1Binding } from "@/lib/runtime-bindings";
+import { limitByIp, RATE_LIMITS } from "@/lib/security/rate-limit";
 
 const leadSchema = z.object({
   email: z.string().email().max(160),
@@ -15,6 +16,8 @@ const leadSchema = z.object({
 }).strict();
 
 export async function POST(request: Request) {
+  const limited = await limitByIp(request, [RATE_LIMITS.publicFormMinute, RATE_LIMITS.publicFormHour]);
+  if (limited) return limited;
   const rejected = requireJsonRequest(request);
   if (rejected) return rejected;
   const parsed = leadSchema.safeParse(await readJson(request));

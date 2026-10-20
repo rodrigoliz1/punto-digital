@@ -3,6 +3,7 @@ import { authEnv, privateSurfacesEnabled, staffFromRequest } from "@/lib/auth/ne
 import { AuthError, clearSessionCookies, finishEnrollment, issueCredentialToken, login, logout, readSessionToken, revokeSessions, sessionCookie, startEnrollment } from "@/lib/auth/staff";
 import { readJson, requireJsonRequest } from "@/lib/request-security";
 import { getD1Binding } from "@/lib/runtime-bindings";
+import { limitByIp, RATE_LIMITS } from "@/lib/security/rate-limit";
 
 type Params = { params: Promise<{ action: string }> };
 
@@ -32,6 +33,8 @@ export async function POST(request: Request, { params }: Params) {
   const { action } = await params;
   const schema = schemas[action as keyof typeof schemas];
   if (!schema || !privateSurfacesEnabled()) return Response.json({ error: "No encontrado." }, { status: 404, headers: NO_STORE });
+  const limited = await limitByIp(request, [RATE_LIMITS.auth]);
+  if (limited) return limited;
   const rejected = requireJsonRequest(request, 10_000);
   if (rejected) return rejected;
   const db = getD1Binding();

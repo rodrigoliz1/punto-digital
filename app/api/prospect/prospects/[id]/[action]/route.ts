@@ -6,6 +6,9 @@ import type { Role } from "@/lib/prospect/types";
 
 type Params = { params: Promise<{ id: string; action: string }> };
 
+/** Acciones con captura web o costo potencial: límite por persona más estricto. */
+const HEAVY = new Set(["analyze", "brief", "images", "demo", "draft"]);
+
 const ACTIONS: Record<string, { role: Role; schema: z.ZodTypeAny; run: (ctx: service.ProspectContext, id: string, body: never, key: () => string) => Promise<unknown> }> = {
   qualify: { role: "operator", schema: emptyBody, run: (ctx, id) => service.qualify(ctx, id) },
   analyze: { role: "operator", schema: emptyBody, run: (ctx, id, _body, key) => service.analyzeProspectWebsite(ctx, id, key()) },
@@ -24,5 +27,5 @@ export async function POST(request: Request, { params }: Params) {
   if (!definition) return Response.json({ error: "Acción desconocida." }, { status: 404 });
   const parsed = idParam.safeParse(rawId);
   if (!parsed.success) return Response.json({ error: "Identificador inválido." }, { status: 400 });
-  return mutation(request, definition.role, definition.schema, (ctx, body) => definition.run(ctx, parsed.data, body as never, () => idempotencyKey(request)));
+  return mutation(request, definition.role, definition.schema, (ctx, body) => definition.run(ctx, parsed.data, body as never, () => idempotencyKey(request)), { heavy: HEAVY.has(action) });
 }

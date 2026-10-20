@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { configuredSiteOrigin, readJson, requireJsonRequest } from "@/lib/request-security";
+import { limitByIp, RATE_LIMITS } from "@/lib/security/rate-limit";
 
 const transferSchema = z.object({
   customerName: z.string().min(2).max(120),
@@ -23,6 +24,8 @@ function generateOrderNumber(): string {
 }
 
 export async function POST(request: Request) {
+  const limited = await limitByIp(request, [RATE_LIMITS.transferEmail, RATE_LIMITS.publicFormHour]);
+  if (limited) return limited;
   const rejected = requireJsonRequest(request, 10_000);
   if (rejected) return rejected;
 

@@ -22,6 +22,13 @@
       "when": 1792452485083,
       "tag": "0002_staff_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1792503057369,
+      "tag": "0003_rate_limits",
+      "breakpoints": true
     }
   ]
 }
