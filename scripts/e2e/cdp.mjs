@@ -4,7 +4,10 @@ import { createHmac } from "node:crypto";
 import { writeFileSync } from "node:fs";
 
 export async function launch(profileDir, port = 9333) {
-  const proc = spawn("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${profileDir}`, "--no-first-run", "--no-default-browser-check", "--disable-gpu", "--disable-extensions", "--disable-sync", "--hide-scrollbars", "about:blank"], { stdio: "ignore" });
+  const chrome = process.env.CHROME_PATH || (process.platform === "darwin" ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" : "google-chrome");
+  // En runners Linux de CI el sandbox de Chrome no está disponible; solo se desactiva si se pide explícitamente.
+  const sandbox = process.env.CHROME_NO_SANDBOX === "1" ? ["--no-sandbox"] : [];
+  const proc = spawn(chrome, [...sandbox, "--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${profileDir}`, "--no-first-run", "--no-default-browser-check", "--disable-gpu", "--disable-extensions", "--disable-sync", "--hide-scrollbars", "about:blank"], { stdio: "ignore" });
   let targets;
   for (let i = 0; i < 50; i += 1) {
     try { targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json(); if (targets.some((t) => t.type === "page")) break; } catch {}
@@ -41,8 +44,11 @@ export async function launch(profileDir, port = 9333) {
       await api.settle();
     },
     async settle(ms = 900) { await new Promise((r) => setTimeout(r, ms)); },
-    async eval(expression) {
-      const result = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
+    async eval(expression, timeoutMs = 20000) {
+      const result = await Promise.race([
+        send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error(`tiempo agotado evaluando: ${expression.slice(0, 60)}`)), timeoutMs)),
+      ]);
       if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description ?? result.exceptionDetails.text);
       return result.result.value;
     },
@@ -54,7 +60,7 @@ export async function launch(profileDir, port = 9333) {
     },
     /** Clic en el botón o enlace visible cuyo texto contiene `label` (opcionalmente dentro de `scope`). */
     async click(label, scope = "body", index = 0) {
-      const ok = await api.eval(`(() => { const root = document.querySelector(${JSON.stringify(scope)}) ?? document.body; const els = [...root.querySelectorAll('button, a, summary')].filter((el) => el.textContent.trim().includes(${JSON.stringify(label)}) && !el.disabled && el.offsetParent !== null); const el = els[${index}]; if (!el) return false; el.scrollIntoView({ block: 'center' }); el.click(); return true; })()`);
+      const ok = await api.eval(`(() => { const root = document.querySelector(${JSON.stringify(scope)}) ?? document.body; const els = [...root.querySelectorAll('button, a, summary')].filter((el) => el.textContent.trim().includes(${JSON.stringify(label)}) && !el.disabled && el.offsetParent !== null); const el = els[${index}]; if (!el) return false; el.scrollIntoView({ block: 'center' }); setTimeout(() => el.click(), 0); return true; })()`);
       if (!ok) throw new Error(`No hay botón «${label}»`);
       await api.settle(1400);
     },

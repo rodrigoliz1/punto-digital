@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Pruebas, tipos, lint y builds
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Pruebas unitarias, de seguridad, de rutas y de migraciones
+        run: npm run test:unit
+      - name: Build de Cloudflare Workers (vinext)
+        run: npm run build
+      - name: Pruebas de renderizado
+        run: node --test tests/*.test.mjs
+      - name: Build de Vercel (Next.js / Webpack)
+        run: npm run build:vercel
+      - name: Auditoría de dependencias de producción
+        run: npm audit --omit=dev --audit-level=high
+
+  e2e:
+    name: Recorrido E2E en Chrome (local, datos de prueba)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Secretos efímeros de prueba (se generan en cada ejecución; nunca son de producción)
+        run: |
+          SETUP=$(openssl rand -base64 48 | tr -d '/+=\n' | head -c 48)
+          echo "::add-mask::$SETUP"
+          {
+            echo "PRIVATE_SURFACES_ENABLED=true"
+            echo "PROSPECT_OS_ENABLED=true"
+            echo "ADMIN_EMAIL=owner@local.test"
+            echo "NEXT_PUBLIC_SITE_URL=http://localhost:3100"
+            echo "AUTH_SECRET=$(openssl rand -hex 32)"
+            echo "AUTH_SETUP_TOKEN=$SETUP"
+          } > .dev.vars
+          echo "E2E_SETUP_TOKEN=$SETUP" >> "$GITHUB_ENV"
+      - name: Servidor de desarrollo
+        run: |
+          nohup npm run dev -- --port 3100 --strictPort > dev-server.log 2>&1 &
+          for i in $(seq 1 120); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3100/admin/acceso || true)
+            [ "$code" != "000" ] && break
+            sleep 1
+          done
+          echo "servidor: $code"
+      - name: Migraciones en la D1 local
+        run: npm run db:migrate:local
+        env:
+          CI: "true"
+          WRANGLER_SEND_METRICS: "false"
+      - name: Recorrido E2E
+        run: npm run test:e2e
+        env:
+          E2E_BASE_URL: http://localhost:3100
+          E2E_OWNER_EMAIL: owner@local.test
+          E2E_OUTPUT: e2e-output
+          CHROME_NO_SANDBOX: "1"
+      - name: Capturas y registro del servidor
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-capturas
+          path: |
+            e2e-output
+            dev-server.log
+          retention-days: 7
