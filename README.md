@@ -108,7 +108,7 @@ Las superficies `/cliente` y `/admin` están cerradas por defecto mediante `PRIV
 
 Módulo de adquisición asistida de clientes en `/admin/prospectos`: descubrimiento con Google Places, calificación determinista, análisis de marca, briefs (deterministas o con Claude), imágenes ilustrativas opcionales, demos privadas con enlace temporal, CRM, bandeja de aprobación, seguimiento, conversiones, exclusiones, costos y auditoría. **No envía mensajes**: una persona aprueba y contacta manualmente, y el sistema lo registra.
 
-Se activa con `PROSPECT_OS_ENABLED=true` junto con `PRIVATE_SURFACES_ENABLED=true`, `ADMIN_EMAIL` y `AUTH_SECRET`; el acceso es por `/admin/acceso`. Se desactiva siempre en Vercel. Las tablas llegan en las migraciones aditivas `0001_prospect_os.sql` y `0002_staff_auth.sql`. Ejecución local, activación segura, respaldo y pendientes en `docs/PROSPECT_OS.md`. Detalles, decisiones y pendientes en `docs/PROSPECT_OS.md`.
+Se activa con `PROSPECT_OS_ENABLED=true` junto con `PRIVATE_SURFACES_ENABLED=true`, `ADMIN_EMAIL` y `AUTH_SECRET`; el acceso es por `/admin/acceso`. Se desactiva siempre en Vercel. Las tablas llegan en las migraciones aditivas `0001_prospect_os.sql` y `0002_staff_auth.sql`. Ejecución local, activación segura, respaldo y pendientes en `docs/PROSPECT_OS.md`; despliegue en Cloudflare (subdominio del equipo) en `docs/CLOUDFLARE_DEPLOY.md`. Detalles, decisiones y pendientes en `docs/PROSPECT_OS.md`.
 
 ## Producción
 

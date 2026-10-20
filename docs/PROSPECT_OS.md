@@ -135,6 +135,8 @@ Luego abre `http://localhost:3000/admin/acceso/activar`. Ingresa tu correo (el d
 
 ## 8. Activación segura en producción
 
+> **Arquitectura elegida (20-oct-2026):** el sitio público sigue en Vercel y Prospect OS se despliega aparte en un Worker de Cloudflare de tu cuenta, en modo equipo. Los pasos concretos están en `docs/CLOUDFLARE_DEPLOY.md`; esta sección resume los principios.
+
 1. Fusiona la rama tras revisar el PR. Antes de publicar, haz el respaldo descrito en la sección 5.
 2. Configura como secretos `AUTH_SECRET`, `AUTH_SETUP_TOKEN` y `ADMIN_EMAIL`, con `PRIVATE_SURFACES_ENABLED=true` y **`PROSPECT_OS_ENABLED=false`**.
 3. Publica. En `https://www.ipunto.digital/admin/acceso/activar`, activa la cuenta de propietario.
@@ -166,7 +168,7 @@ Luego abre `http://localhost:3000/admin/acceso/activar`. Ingresa tu correo (el d
 ## 11. Pendientes conocidos
 
 - Verificar en vivo Google Places, Claude y el proveedor de imágenes, con presupuesto mínimo y tu autorización.
-- Límite de solicitudes distribuido en `/propuesta/*` y la API (hoy solo el inicio de sesión tiene bloqueo).
+- Límites de solicitudes: implementados (ver `docs/CLOUDFLARE_DEPLOY.md`, sección 7). En Vercel, los formularios públicos solo tienen un límite en memoria hasta que se cree una regla de firewall.
 - Vulnerabilidades de herramientas de desarrollo (no llegan al Worker): `@cloudflare/vite-plugin` / `wrangler` / `miniflare` / `undici` / `ws` (corregidas en 1.64.0, publicada hace días), `vite` 8.0 (servidor de desarrollo; afecta sobre todo a Windows), `vinext` 0.0.x (requiere salto a 1.x, mayor), `drizzle-kit` y `eslint-config-next` (los arreglos de `npm audit` proponen retrocesos de versión mayor, no aplicables). `npm audit --omit=dev`: 0.
 - Paginación en `applySuppressions` cuando haya miles de prospectos.
 - Monitoreo de errores y alertas de gasto.

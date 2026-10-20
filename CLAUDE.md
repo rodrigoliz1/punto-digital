@@ -10,6 +10,7 @@ Sitio comercial y plataforma de contratación de Punto Digital (Next.js 16, Type
 - `npm run db:generate`: tras cambiar `db/schema.ts`; inspecciona el SQL generado (debe pasar `tests/db/migrations.test.ts`).
 - `npm run db:migrate:local`: aplica `drizzle/` a la D1 local del servidor de desarrollo.
 - `npm run test:e2e`: recorrido en Chrome headless contra localhost (ver `docs/PROSPECT_OS.md`).
+- `npm run cf:build:team` / `npm run cf:d1 -- status|backup|apply`: despliegue propio en Cloudflare (ver `docs/CLOUDFLARE_DEPLOY.md`). Nunca desplegar ni aplicar migraciones remotas sin autorización explícita.
 
 ## Arquitectura obligatoria
 - Una sola aplicación: no crear servicios paralelos (Docker, Python, PostgreSQL, n8n) sin justificación escrita.
@@ -29,6 +30,7 @@ Sitio comercial y plataforma de contratación de Punto Digital (Next.js 16, Type
 - Secretos solo en variables de entorno. Nunca registrar tokens, cuerpos de solicitudes ni datos sensibles.
 - Prohibido alterar estados `approved` o `contacted` sin un evento auditable; usar siempre `transition()` del servicio.
 - Toda llamada con costo pasa por `checkBudget()` y `recordUsage()`.
+- Todo endpoint nuevo debe pasar por `lib/security/rate-limit` (las rutas de `lib/prospect/api.ts` ya lo hacen).
 
 ## Agentes de Prospect OS
 1. `researcher`: Google Places, con evidencia y fecha.
