@@ -18,7 +18,7 @@ export async function launch(profileDir, port = 9333) {
   const listeners = new Map();
   ws.onmessage = (event) => {
     const msg = JSON.parse(event.data);
-    if (msg.id && pending.has(msg.id)) { const { resolve, reject } = pending.get(msg.id); pending.delete(msg.id); msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result); }
+    if (msg.id && pending.has(msg.id)) { const { resolve, reject } = pending.get(msg.id); pending.delete(msg.id); if (msg.error) reject(new Error(msg.error.message)); else resolve(msg.result); }
     else if (msg.method) for (const fn of listeners.get(msg.method) ?? []) fn(msg.params);
   };
   const send = (method, params = {}) => new Promise((resolve, reject) => { id += 1; pending.set(id, { resolve, reject }); ws.send(JSON.stringify({ id, method, params })); });
