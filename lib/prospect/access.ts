@@ -18,7 +18,8 @@ export function prospectEnv(): ProspectContext["env"] {
     GOOGLE_PLACES_API_KEY: process.env.GOOGLE_PLACES_API_KEY,
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || "https://www.ipunto.digital",
+    // En el despliegue del equipo, los enlaces de demo apuntan a su subdominio.
+    SITE_URL: process.env.PROSPECT_LINK_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://www.ipunto.digital",
   };
 }
 

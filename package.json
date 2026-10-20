@@ -11,12 +11,14 @@
     "build:vercel": "next build --webpack",
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "test": "npm run test:unit && npm run build && node --test tests/*.test.mjs",
-    "test:unit": "node --import tsx --test --no-warnings tests/prospect/*.test.ts tests/auth/*.test.ts tests/db/*.test.ts tests/security/*.test.ts",
+    "test:unit": "node --import tsx --test --no-warnings tests/prospect/*.test.ts tests/auth/*.test.ts tests/db/*.test.ts tests/security/*.test.ts tests/deploy/*.test.ts",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply DB --local --persist-to .wrangler/state --config db/wrangler.migrations.jsonc",
-    "test:e2e": "node scripts/e2e/browser-flow.mjs"
+    "test:e2e": "node scripts/e2e/browser-flow.mjs",
+    "cf:build:team": "node --env-file=cloudflare/equipo.env scripts/cloudflare/build-team.mjs",
+    "cf:d1": "node --env-file-if-exists=cloudflare/equipo.env scripts/cloudflare/d1.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",

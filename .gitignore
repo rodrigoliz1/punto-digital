@@ -48,3 +48,8 @@ next-env.d.ts
 
 # capturas del recorrido E2E
 /e2e-output/
+
+# Cloudflare: identificadores de la cuenta y respaldos de D1 (datos personales)
+/cloudflare/equipo.env
+/backups/
+/.pd-d1-tools.wrangler.json
