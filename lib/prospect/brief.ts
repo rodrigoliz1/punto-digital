@@ -39,11 +39,18 @@ const CATEGORY_DIRECTION: Array<[RegExp, { audience: string; voice: string; visu
 
 const FALLBACK_DIRECTION = { audience: "Clientes locales de Guadalajara y Zapopan que comparan opciones en línea.", voice: "Profesional, clara y cercana.", visual: "Fotografía de producto o servicio con luz natural y composición limpia.", pillars: ["Servicio principal", "Diferenciadores verificables", "Equipo y proceso", "Contacto"], palette: ["#0b1f3a", "#1769ff", "#f6f8fc"] };
 
+/** Grises, blancos y negros no aportan identidad: no cuentan como colores de marca. */
+export function isNeutralColor(hex: string) {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  return Math.max(r, g, b) - Math.min(r, g, b) < 28;
+}
+
 /** Brief determinista: no usa IA ni inventa hechos; marca todo lo no verificado. */
 export function deterministicBrief(input: BriefInput): BrandBrief {
   const direction = CATEGORY_DIRECTION.find(([pattern]) => pattern.test(input.category))?.[1] ?? FALLBACK_DIRECTION;
-  const observedPalette = input.analysis?.palette.slice(0, 3) ?? [];
-  const palette = observedPalette.length >= 2 ? observedPalette : direction.palette;
+  const observedPalette = (input.analysis?.palette ?? []).filter((hex) => !isNeutralColor(hex)).slice(0, 2);
+  // Colores con tono del sitio + el fondo suave de la dirección del giro; si no hay suficientes, solo la del giro.
+  const palette = observedPalette.length >= 2 ? [...observedPalette, direction.palette[2]] : direction.palette;
   const place = input.zone ? `${input.zone}, ${input.city}` : input.city;
   const prompts = direction.pillars.flatMap((pillar, index) => [
     `${pillar} para un negocio de ${input.category} en ${place}; ${direction.visual} Paleta ${palette.join(", ")}. Sin logotipos, sin texto, sin personas identificables.`,

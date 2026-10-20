@@ -53,6 +53,8 @@ export default async function ProspectDetailPage({ params }: { params: Promise<{
           {can("reviewer") && p.status === "demo_ready" ? <ActionButton endpoint={`${api}/approve`} label="6 · Aprobar prospecto y demo" variant="primary" confirm="Confirmo que revisé hechos, derechos de imagen y la demo." /> : null}
         </div>
         {!can("operator") ? <p className="po-muted">Tu rol es de lectura.</p> : null}
+        {suppressed ? <p className="po-muted">Sin acciones disponibles: el prospecto está excluido y el historial se conserva solo para auditoría.</p> : null}
+        {!suppressed && can("operator") && ["contacted", "replied", "meeting", "won", "lost"].includes(p.status) ? <p className="po-muted">El prospecto ya fue contactado: registra su avance en «Seguimiento y conversión».</p> : null}
       </Panel>
 
       <div className="po-grid-2">
@@ -70,17 +72,17 @@ export default async function ProspectDetailPage({ params }: { params: Promise<{
         <Panel title="Análisis de marca" description={detail.website ? `Sitio leído ${date(detail.evidence.find((e) => e.kind === "website")?.observed_at)}` : "Sin análisis de sitio todavía."}>
           {detail.website ? <>
             <KeyValue items={[["Título", detail.website.title], ["Descripción", detail.website.description], ["HTTPS", detail.website.https ? "Sí" : "No"], ["Generador", detail.website.generator], ["Secciones", detail.website.keywords.join(", ") || "—"]]} />
-            {detail.website.palette.length ? <div className="po-swatches">{detail.website.palette.map((c) => <span key={c} style={{ background: c }} title={c} />)}</div> : null}
-            {detail.website.issues.length ? <ul className="po-checks">{detail.website.issues.map((issue) => <li key={issue} className="is-warning">{issue}</li>)}</ul> : null}
+            {detail.website.palette.length ? <div className="po-swatches">{detail.website.palette.map((c, i) => <span key={`${c}${i}`} style={{ background: c }} title={c} />)}</div> : null}
+            {detail.website.issues.length ? <ul className="po-checks">{detail.website.issues.map((issue, i) => <li key={i} className="is-warning">{issue}</li>)}</ul> : null}
           </> : <Empty title="Ejecuta «Analizar sitio web»">El contenido del sitio se trata como dato no confiable.</Empty>}
         </Panel>
         <Panel title="Brief creativo" description={detail.brandAudits[0] ? `v${detail.brandAudits[0].version} · ${detail.brandAudits[0].generator}` : undefined}>
           {brief ? <>
             <p>{brief.positioning}</p>
             <KeyValue items={[["Audiencia", brief.audience], ["Tono", brief.voice], ["Dirección visual", brief.visualDirection]]} />
-            <div className="po-swatches">{brief.palette.map((c) => <span key={c} style={{ background: c }} title={c} />)}</div>
+            <div className="po-swatches">{brief.palette.map((c, i) => <span key={`${c}${i}`} style={{ background: c }} title={c} />)}</div>
             <p className="po-muted"><strong>Por verificar con el negocio:</strong> {brief.claimsToVerify.join(" · ")}</p>
-            <details className="po-details"><summary>Prompts de imagen ({brief.assetPrompts.length})</summary><ol>{brief.assetPrompts.map((prompt) => <li key={prompt}><small>{prompt}</small></li>)}</ol></details>
+            <details className="po-details"><summary>Prompts de imagen ({brief.assetPrompts.length})</summary><ol>{brief.assetPrompts.map((prompt, index) => <li key={index}><small>{prompt}</small></li>)}</ol></details>
           </> : <Empty title="Sin brief" />}
           {detail.assets.length ? <div className="po-assets">{detail.assets.map((asset) => <figure key={asset.id}>{/* Imagen privada servida con sesión; next/image no aplica. */}{/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={`/api/prospect/assets/${asset.id}`} alt="Concepto ilustrativo generado" loading="lazy" /><figcaption>Concepto ilustrativo · {asset.status === "approved" ? "aprobado" : "borrador"}</figcaption></figure>)}</div> : null}

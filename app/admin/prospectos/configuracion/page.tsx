@@ -1,5 +1,5 @@
 import { ActionButton, JsonForm } from "@/components/prospect/actions";
-import { Badge, Notice, PageHeader, Panel, Table, date, usd } from "@/components/prospect/ui";
+import { Badge, GENERIC_LABELS, Notice, PageHeader, Panel, Table, date, usd } from "@/components/prospect/ui";
 import { requireProspectPage } from "@/lib/prospect/access";
 import { PROVIDER_LABELS, PROVIDERS } from "@/lib/prospect/budget";
 import { getSettings } from "@/lib/prospect/queries";
@@ -9,7 +9,7 @@ export const metadata = { title: "Configuración" };
 
 const PROVIDER_OPTIONS: Record<string, Array<{ value: string; label: string }>> = {
   researcher: [{ value: "google_places", label: "Google Places API" }],
-  creative: [{ value: "deterministic", label: "Determinista (sin IA)" }, { value: "anthropic", label: "Claude (Anthropic)" }],
+  creative: [{ value: "deterministic", label: "Determinista" }, { value: "anthropic", label: "Claude (Anthropic)" }],
 };
 
 export default async function SettingsPage() {
@@ -79,7 +79,7 @@ export default async function SettingsPage() {
         ]} /> : null}
       </Panel>
       <Panel title="Trabajos de agentes" description="Ejecuciones idempotentes con reintento (máx. 3 intentos por solicitud).">
-        <div className="po-actions">{settings.jobs.length === 0 ? <small className="po-muted">Sin ejecuciones.</small> : settings.jobs.map((j) => <span key={`${j.agent}${j.status}`}>{AGENT_LABELS[j.agent as keyof typeof AGENT_LABELS]?.name ?? j.agent} <Badge status={j.status} label={`${j.status} · ${j.n}`} /></span>)}</div>
+        <div className="po-actions">{settings.jobs.length === 0 ? <small className="po-muted">Sin ejecuciones.</small> : settings.jobs.map((j) => <span key={`${j.agent}${j.status}`}>{AGENT_LABELS[j.agent as keyof typeof AGENT_LABELS]?.name ?? j.agent} <Badge status={j.status} label={`${GENERIC_LABELS[j.status] ?? j.status} · ${j.n}`} /></span>)}</div>
       </Panel>
       {admin ? <Panel title="Mantenimiento" description="Purga el contenido de Google Places con más de 30 días (dirección, teléfono y sitio no verificado). El place_id se conserva.">
         <ActionButton endpoint="/api/prospect/settings/purge-places" label="Purgar contenido de Places vencido" variant="danger" confirm="Se eliminarán datos de Places vencidos. ¿Continuar?" />

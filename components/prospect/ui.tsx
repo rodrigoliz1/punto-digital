@@ -17,7 +17,7 @@ const STATUS_TONE: Record<string, string> = {
   draft: "neutral", sent: "green", discarded: "neutral", revoked: "red", superseded: "neutral", reviewed: "teal", active: "green", paused: "amber", closed: "neutral", running: "amber", succeeded: "green", failed: "red",
 };
 
-const GENERIC_LABELS: Record<string, string> = { draft: "Borrador", approved: "Aprobado", sent: "Enviado (manual)", discarded: "Descartado", revoked: "Revocada", superseded: "Reemplazada", reviewed: "Revisado", active: "Activa", paused: "Pausada", closed: "Cerrada" };
+export const GENERIC_LABELS: Record<string, string> = { running: "En curso", succeeded: "Exitoso", failed: "Fallido", draft: "Borrador", approved: "Aprobado", sent: "Enviado (manual)", discarded: "Descartado", revoked: "Revocada", superseded: "Reemplazada", reviewed: "Revisado", active: "Activa", paused: "Pausada", closed: "Cerrada" };
 
 export function Badge({ status, label }: { status: string; label?: string }) {
   const text = label ?? STATUS_LABELS[status as ProspectStatus] ?? GENERIC_LABELS[status] ?? status;

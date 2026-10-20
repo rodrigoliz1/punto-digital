@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader2, LogOut } from "lucide-react";
 
@@ -19,7 +18,6 @@ function field(form: HTMLFormElement, name: string) {
 }
 
 export function LoginForm({ next }: { next: string }) {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -30,8 +28,7 @@ export function LoginForm({ next }: { next: string }) {
     const result = await post("login", { email: field(form, "email"), password: String(new FormData(form).get("password") ?? ""), code: field(form, "code") });
     setBusy(false);
     if (!result.ok) return setError(result.error);
-    router.replace(next);
-    router.refresh();
+    window.location.assign(next);
   };
   return (
     <form className="po-form" onSubmit={submit}>
@@ -44,7 +41,6 @@ export function LoginForm({ next }: { next: string }) {
 }
 
 export function EnrollForm({ email: initialEmail, token: initialToken }: { email: string; token: string }) {
-  const router = useRouter();
   const [step, setStep] = useState<{ email: string; token: string; secret: string; uri: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -71,8 +67,7 @@ export function EnrollForm({ email: initialEmail, token: initialToken }: { email
     const result = await post("enroll-finish", { email: step.email, token: step.token, password, secret: step.secret, code: field(form, "code") });
     setBusy(false);
     if (!result.ok) return setError(result.error);
-    router.replace("/admin");
-    router.refresh();
+    window.location.assign("/admin");
   };
   if (!step) return (
     <form className="po-form" onSubmit={start}>
@@ -93,13 +88,11 @@ export function EnrollForm({ email: initialEmail, token: initialToken }: { email
 }
 
 export function LogoutButton() {
-  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const run = async () => {
     setBusy(true);
     await post("logout", {});
-    router.replace("/admin/acceso");
-    router.refresh();
+    window.location.assign("/admin/acceso");
   };
   return <button type="button" className="po-btn po-btn--ghost" onClick={run} disabled={busy} aria-label="Cerrar sesión"><LogOut size={15} />Salir</button>;
 }

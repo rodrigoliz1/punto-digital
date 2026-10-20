@@ -53,7 +53,7 @@ const worker = {
     if (url.protocol === "https:") headers.set("strict-transport-security", "max-age=31536000; includeSubDomains");
     if (url.pathname.startsWith("/api/") || ["/admin", "/cliente", "/onboarding", "/propuesta"].some((path) => url.pathname.startsWith(path))) headers.set("cache-control", "private, no-store");
     if (url.pathname.startsWith("/propuesta") || url.pathname.startsWith("/admin")) headers.set("x-robots-tag", "noindex, nofollow, noarchive");
-    headers.set("content-security-policy", "default-src 'self'; img-src 'self' data: blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://api.stripe.com; frame-src https://checkout.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self' https://checkout.stripe.com; frame-ancestors 'self'; manifest-src 'self'; upgrade-insecure-requests");
+    headers.set("content-security-policy", `default-src 'self'; img-src 'self' data: blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://api.stripe.com; frame-src https://checkout.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self' https://checkout.stripe.com; frame-ancestors 'self'; manifest-src 'self'${url.protocol === "https:" ? "; upgrade-insecure-requests" : ""}`);
     return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
   },
 };

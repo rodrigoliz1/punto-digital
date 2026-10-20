@@ -137,10 +137,12 @@ function FieldInput({ field }: { field: Field }) {
   return <label htmlFor={id} className={`po-field${field.type === "checkbox" ? " po-field--check" : ""}${field.wide || field.type === "textarea" || field.type === "json" ? " po-field--wide" : ""}`}><span>{field.label}{field.required ? " *" : ""}</span>{control}{field.help ? <small>{field.help}</small> : null}</label>;
 }
 
+const RESULT_LABELS: Record<string, string> = { found: "encontrados", created: "creados", duplicates: "duplicados", suppressed: "omitidos por exclusión", affectedProspects: "prospectos excluidos", score: "puntaje", purged: "registros purgados", revoked: "sesiones cerradas" };
+
 function ResultSummary({ data }: { data: Record<string, unknown> }) {
-  const entries = Object.entries(data).filter(([key, value]) => ["string", "number", "boolean"].includes(typeof value) && key !== "id");
   if (data.url) return <CopyBlock label="Enlace privado (se muestra una sola vez)" text={String(data.url)} />;
-  return entries.length ? <small className="po-ok">{entries.map(([key, value]) => `${key}: ${value}`).join(" · ")}</small> : <small className="po-ok">Guardado.</small>;
+  const entries = Object.entries(data).filter(([key, value]) => typeof value === "number" && RESULT_LABELS[key]);
+  return <small className="po-ok">{entries.length ? entries.map(([key, value]) => `${RESULT_LABELS[key]}: ${value}`).join(" · ") : "Listo."}</small>;
 }
 
 export function CopyBlock({ label, text }: { label: string; text: string }) {

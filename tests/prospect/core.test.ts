@@ -107,6 +107,13 @@ test("constructor de demos: escapa contenido no confiable y rotula la simulació
   assert.equal(escapeHtml(`"'&`), "&quot;&#39;&amp;");
 });
 
+test("brief determinista: ignora colores neutros del sitio y completa con la paleta del giro", () => {
+  const analysis = analyzeWebsite('<style>.a{color:#f0f0f2}.b{color:#222222}.c{color:#38488f}</style>', "https://ejemplo.mx/");
+  assert.deepEqual(deterministicBrief({ name: "X", category: "cafetería", city: "Zapopan", zone: null, website: null, instagramUrl: null, analysis }).palette, ["#3b2a20", "#c8a27a", "#efe6da"], "un solo color con tono no basta: paleta del giro");
+  const branded = analyzeWebsite('<style>.a{color:#ffffff}.b{color:#7a2e1d}.c{color:#e3b23c}.d{color:#eeeeee}</style>', "https://ejemplo.mx/");
+  assert.deepEqual(deterministicBrief({ name: "X", category: "cafetería", city: "Zapopan", zone: null, website: null, instagramUrl: null, analysis: branded }).palette, ["#7a2e1d", "#e3b23c", "#efe6da"]);
+});
+
 test("brief determinista: nueve prompts sin marcas y afirmaciones por verificar", () => {
   const brief = deterministicBrief({ name: "Barbería Norte", category: "barbería", city: "Zapopan", zone: null, website: null, instagramUrl: null, analysis: null });
   assert.equal(brief.assetPrompts.length, 9);

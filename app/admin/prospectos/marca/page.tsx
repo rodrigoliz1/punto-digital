@@ -14,7 +14,7 @@ export default async function BrandPage() {
       <Panel title="Briefs recientes">
         {rows.length === 0 ? <Empty title="Sin briefs todavía">Genera uno desde la ficha de un prospecto.</Empty> : (
           <Table head={["Negocio", "Versión", "Paleta", "Tono", "Generador", "Estado", "Fecha"]}>
-            {rows.map((row) => <tr key={row.id}><td><Link className="po-row-link" href={`/admin/prospectos/p/${row.prospect_id}`}>{row.name}</Link><small>{row.category} · {row.city}</small></td><td>v{row.version}</td><td><div className="po-swatches">{row.palette.map((c) => <span key={c} style={{ background: c }} title={c} />)}</div></td><td><small>{row.voice}</small></td><td><small>{row.generator}</small></td><td><Badge status={row.status} /></td><td><small>{date(row.created_at)}</small></td></tr>)}
+            {rows.map((row) => <tr key={row.id}><td><Link className="po-row-link" href={`/admin/prospectos/p/${row.prospect_id}`}>{row.name}</Link><small>{row.category} · {row.city}</small></td><td>v{row.version}</td><td><div className="po-swatches">{row.palette.map((c, i) => <span key={`${c}${i}`} style={{ background: c }} title={c} />)}</div></td><td><small>{row.voice}</small></td><td><small>{row.generator}</small></td><td><Badge status={row.status} /></td><td><small>{date(row.created_at)}</small></td></tr>)}
           </Table>
         )}
       </Panel>

@@ -10,10 +10,12 @@
 .po .sidebar-help strong { font-size: 12px; }
 .po .sidebar-help p { font-size: 11px; }
 .po .dashboard-main > header > div { font-size: 12px; }
+.po .dashboard-main > header .po-btn { display: inline-flex; flex-direction: row; width: auto; height: auto; min-height: 34px; border-radius: 10px; border: 0; background: transparent; white-space: nowrap; }
 .po-role { padding: 4px 10px; border-radius: 999px; background: var(--pd-surface-blue); color: var(--pd-blue-600); font-size: 11px; font-weight: 600; }
 .po-content { padding-top: 34px; display: grid; gap: 18px; }
 .po-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
-.po-header span { color: var(--pd-blue-600); font: 600 11px var(--font-manrope); text-transform: uppercase; letter-spacing: .1em; }
+.po-header > div:first-child > span { color: var(--pd-blue-600); font: 600 11px var(--font-manrope); text-transform: uppercase; letter-spacing: .1em; }
+.po-header__actions { align-items: center; }
 .po-header h1 { margin: 6px 0 6px; font-size: clamp(28px, 3vw, 38px); letter-spacing: -.045em; }
 .po-header p { margin: 0; max-width: 720px; font-size: 14px; color: var(--pd-text-secondary); }
 .po-header__actions { display: flex; gap: 8px; flex-wrap: wrap; }
