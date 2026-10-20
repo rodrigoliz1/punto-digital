@@ -27,7 +27,8 @@ La aplicación se abre normalmente en `http://localhost:3000`.
 npm run dev          # entorno local
 npm run build        # build compatible con Cloudflare Workers
 npm run build:vercel # build alternativo con Next.js/Webpack
-npm test             # build y pruebas de renderizado
+npm test             # pruebas unitarias, build y pruebas de renderizado
+npm run test:unit    # pruebas de Prospect OS (dominio y servicio sobre SQLite)
 npm run lint         # revisión estática
 npm run typecheck    # TypeScript estricto
 npm run db:generate  # genera migraciones Drizzle desde db/schema.ts
@@ -101,7 +102,13 @@ Antes de activar producción:
 - Páginas legales marcadas como pendientes de revisión profesional.
 - No se solicitan contraseñas mediante campos ordinarios.
 
-Las superficies `/cliente` y `/admin` están cerradas por defecto mediante `PRIVATE_SURFACES_ENABLED=false`. Al habilitarlas requieren identidad proporcionada por la plataforma; `/admin` además exige `ADMIN_EMAIL`. No consultan datos reales todavía porque falta autorización por proyecto/recurso.
+Las superficies `/cliente` y `/admin` están cerradas por defecto mediante `PRIVATE_SURFACES_ENABLED=false`. `/admin` exige una sesión del equipo verificada en servidor (contraseña + TOTP, ver `docs/PROSPECT_OS.md`), con rol de administrador o propietario (`ADMIN_EMAIL`); los encabezados de identidad del cliente no se aceptan. `/cliente` solo usa la identidad de la plataforma si `PLATFORM_IDENTITY_HEADERS_TRUSTED=true`. No consultan datos reales todavía porque falta autorización por proyecto/recurso.
+
+## Prospect OS
+
+Módulo de adquisición asistida de clientes en `/admin/prospectos`: descubrimiento con Google Places, calificación determinista, análisis de marca, briefs (deterministas o con Claude), imágenes ilustrativas opcionales, demos privadas con enlace temporal, CRM, bandeja de aprobación, seguimiento, conversiones, exclusiones, costos y auditoría. **No envía mensajes**: una persona aprueba y contacta manualmente, y el sistema lo registra.
+
+Se activa con `PROSPECT_OS_ENABLED=true` junto con `PRIVATE_SURFACES_ENABLED=true`, `ADMIN_EMAIL` y `AUTH_SECRET`; el acceso es por `/admin/acceso`. Se desactiva siempre en Vercel. Las tablas llegan en las migraciones aditivas `0001_prospect_os.sql` y `0002_staff_auth.sql`. Ejecución local, activación segura, respaldo y pendientes en `docs/PROSPECT_OS.md`; despliegue en Cloudflare (subdominio del equipo) en `docs/CLOUDFLARE_DEPLOY.md`. Detalles, decisiones y pendientes en `docs/PROSPECT_OS.md`.
 
 ## Producción
 

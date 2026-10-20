@@ -2,16 +2,15 @@
 
 import Link from "next/link";
 import { MessageCircle, Menu, X, ArrowUpRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { NAVIGATION } from "@/config/site";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => { setMounted(true); }, []);
+  // true solo en el cliente (el portal necesita `document`), sin setState dentro de un efecto.
+  const mounted = useSyncExternalStore(subscribeNever, () => true, () => false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -68,4 +67,8 @@ export function SiteHeader() {
       )}
     </header>
   );
+}
+
+function subscribeNever() {
+  return () => {};
 }

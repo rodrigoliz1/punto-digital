@@ -2,10 +2,13 @@ import { z } from "zod";
 import { calculateQuote } from "@/config/products";
 import { configuredSiteOrigin, readJson, requireJsonRequest } from "@/lib/request-security";
 import { getD1Binding } from "@/lib/runtime-bindings";
+import { limitByIp, RATE_LIMITS } from "@/lib/security/rate-limit";
 
 const checkoutSchema = z.object({ productSlug: z.enum(["esencial", "profesional", "tienda"]), addonSlugs: z.array(z.string()).max(12), mode: z.enum(["deposit", "full"]), email: z.string().email().max(160), requestId: z.string().uuid() }).strict();
 
 export async function POST(request: Request) {
+  const limited = await limitByIp(request, [RATE_LIMITS.checkout]);
+  if (limited) return limited;
   const rejected = requireJsonRequest(request, 10_000);
   if (rejected) return rejected;
   const parsed = checkoutSchema.safeParse(await readJson(request));

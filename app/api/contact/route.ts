@@ -1,10 +1,13 @@
 import { z } from "zod";
 import { readJson, requireJsonRequest } from "@/lib/request-security";
 import { getD1Binding } from "@/lib/runtime-bindings";
+import { limitByIp, RATE_LIMITS } from "@/lib/security/rate-limit";
 
 const contactSchema = z.object({ name: z.string().min(2).max(120), email: z.string().email().max(160), phone: z.string().max(40).optional().default(""), message: z.string().min(10).max(4000), company: z.string().max(0).optional().default("") });
 
 export async function POST(request: Request) {
+  const limited = await limitByIp(request, [RATE_LIMITS.publicFormMinute, RATE_LIMITS.publicFormHour]);
+  if (limited) return limited;
   const rejected = requireJsonRequest(request, 10_000);
   if (rejected) return rejected;
   const parsed = contactSchema.safeParse(await readJson(request));

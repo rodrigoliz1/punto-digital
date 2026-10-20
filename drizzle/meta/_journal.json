@@ -8,6 +8,27 @@
       "when": 1784268080367,
       "tag": "0000_little_tana_nile",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1792436830944,
+      "tag": "0001_prospect_os",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792452485083,
+      "tag": "0002_staff_auth",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1792503057369,
+      "tag": "0003_rate_limits",
+      "breakpoints": true
     }
   ]
 }

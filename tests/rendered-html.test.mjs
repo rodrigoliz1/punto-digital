@@ -64,10 +64,21 @@ test("data and security foundations are present", async () => {
   assert.match(worker, /content-security-policy/);
   assert.match(worker, /strict-transport-security/);
   assert.match(access, /PRIVATE_SURFACES_ENABLED/);
-  assert.match(access, /ADMIN_EMAIL/);
+  // /admin exige sesión del equipo verificada en servidor; los encabezados de plataforma no se confían por defecto.
+  assert.match(access, /requireStaffPage\("\/admin", "admin"\)/);
+  const [staffAuth, platformAuth] = await Promise.all([read("lib/auth/staff.ts"), read("app/chatgpt-auth.ts")]);
+  assert.match(staffAuth, /ADMIN_EMAIL/);
+  assert.match(staffAuth, /HttpOnly; SameSite=Strict/);
+  assert.match(platformAuth, /PLATFORM_IDENTITY_HEADERS_TRUSTED === "true" && !process\.env\.VERCEL/);
   assert.match(site, /https:\/\/www\.ipunto\.digital/);
   assert.match(upload, /carga está deshabilitada/);
   assert.match(admin, /force-dynamic/);
   assert.match(client, /force-dynamic/);
-  assert.match(legal, /Pendiente de revisión profesional/);
+  // Las páginas legales tienen texto propio (ya no borradores con aviso de revisión pendiente).
+  for (const slug of ["aviso-de-privacidad", "terminos", "politica-de-cancelacion", "politica-de-reembolsos", "cookies"]) {
+    assert.match(legal, new RegExp(`"?${slug}"?: \\(\\s*<>`), `contenido legal propio para ${slug}`);
+  }
+  assert.match(legal, /LFPDPPP/);
+  assert.match(legal, /Derechos ARCO/);
+  assert.equal((legal.match(/Última actualización:/g) ?? []).length >= 5, true);
 });

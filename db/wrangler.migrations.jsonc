@@ -1,0 +1,15 @@
+// Solo para aplicar migraciones a la base D1 LOCAL del servidor de desarrollo (vinext dev).
+// Usa el mismo binding e identificador de marcador que vite.config.ts. No sirve para producción:
+// en Sites, la plataforma aplica `drizzle/` al publicar.
+{
+  "name": "punto-digital-local-migrations",
+  "compatibility_date": "2026-09-01",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "site-creator-d1",
+      "database_id": "00000000-0000-4000-8000-000000000000",
+      "migrations_dir": "../drizzle"
+    }
+  ]
+}

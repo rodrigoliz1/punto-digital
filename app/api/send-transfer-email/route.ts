@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { configuredSiteOrigin, readJson, requireJsonRequest } from "@/lib/request-security";
+import { limitByIp, RATE_LIMITS } from "@/lib/security/rate-limit";
 
 const transferSchema = z.object({
   customerName: z.string().min(2).max(120),
@@ -23,13 +24,15 @@ function generateOrderNumber(): string {
 }
 
 export async function POST(request: Request) {
+  const limited = await limitByIp(request, [RATE_LIMITS.transferEmail, RATE_LIMITS.publicFormHour]);
+  if (limited) return limited;
   const rejected = requireJsonRequest(request, 10_000);
   if (rejected) return rejected;
 
   const parsed = transferSchema.safeParse(await readJson(request));
   if (!parsed.success) return Response.json({ error: "Datos de transferencia inválidos." }, { status: 400 });
 
-  const { customerName, customerEmail, productName, addonNames, mode, amount, clabe, bankName, beneficiary, whatsappNumber, requestId } = parsed.data;
+  const { customerName, customerEmail, productName, addonNames, mode, amount, clabe, bankName, beneficiary, whatsappNumber } = parsed.data;
   const orderNumber = generateOrderNumber();
   const origin = configuredSiteOrigin(request);
   const conceptLabel = mode === "deposit" ? "Anticipo" : "Pago total";

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Banknote, Building2, Check, CheckCircle2, Clock3, Copy, CreditCard, Landmark, Loader2, RotateCcw, Send } from "lucide-react";
+import { ArrowLeft, ArrowRight, Banknote, Building2, Check, CheckCircle2, Clock3, CreditCard, Loader2, RotateCcw, Send } from "lucide-react";
 import { ADDONS, PRODUCTS, calculateQuote, formatMoney } from "@/config/products";
 import { INDUSTRIES, PROJECT_TYPES } from "@/config/preview";
 import { LivePreview, DEFAULT_PREVIEW_PREFERENCES } from "@/components/preview/live-preview";
